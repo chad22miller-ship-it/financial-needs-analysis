@@ -634,9 +634,9 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
       <div class="calc2" id="calc2">
         <div class="calc2-head">
           <p class="step-k">The full calculator</p>
-          <h3 class="step-h">Current projections</h3>
+          <h3 class="step-h">Current illustration</h3>
           <p class="step-p">Where the numbers could land at your retirement age if you keep saving what you save now, and how the balance could build year by year.</p>
-          <p class="step-p">You can change the FI projection (age, retirement age and monthly spending) above the chart, and what you save, the interest rate and the other assumptions on the left. Everything starts filled in to match the FI number above, and the boxes and the chart update as you change it.</p>
+          <p class="step-p">You can change the FI assumptions (age, retirement age and monthly spending) above the chart, and what you save, the interest rate and the other assumptions on the left. Everything starts filled in to match the FI number above, and the boxes and the chart update as you change it.</p>
         </div>
         <div class="tiles">
           <div class="tile"><div class="k">Time horizon</div><div class="v" id="c2-t1v"></div><div class="s" id="c2-t1s"></div></div>
@@ -699,7 +699,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
 
           <section class="card fi-card" aria-labelledby="c2-fiH">
             <div>
-              <h2 id="c2-fiH">FI projection</h2>
+              <h2 id="c2-fiH">FI assumptions</h2>
               <p class="sub">Starts at the numbers above.</p>
             </div>
             <div id="c2-fieldsFi" class="cfields"></div>
@@ -830,7 +830,7 @@ function describeProgress(pct){
      tone is "good", "close" or "gap" and only controls the icon color. */
   if(pct>=1)   return {tone:"good",  label:"Could be on track",     message:"In this illustration, these numbers would reach the goal. A next step could be looking at how to protect it."};
   if(pct>=0.7) return {tone:"close", label:"Could be within reach", message:"In this illustration, these numbers come close. A small change could help narrow the gap."};
-  return        {tone:"gap",   label:"Room to grow", message:"In this illustration there is a gap. More time or a few adjustments could help narrow it."};
+  return        {tone:"gap",   label:"A gap in this illustration", message:"In this illustration there is a gap. More time or a few adjustments could help narrow it."};
 }
 
 /* ================= helpers ================= */
@@ -1260,7 +1260,7 @@ function drawChartTo(o){
     var redH=ih*(P.goal/yMax);
     if(o.need){
       var head=(gapIn&&P.needed>0?'Save about '+money(P.needed):'Saving '+money(S.contribution))+' a month';
-      var sub='for '+P.yrs+' years at '+S.rate+'% a year, with '+S.inflation+'% inflation, in this illustration';
+      var sub='for '+P.yrs+' years at an assumed '+S.rate+'% a year, with '+S.inflation+'% inflation, in this illustration';
       noteHtml='<b>'+head+'</b> '+sub+'.';
       var fs=Math.max(15,Math.min(22,(window.innerWidth||800)*0.022)),fs2=Math.max(12.5,Math.round(fs*0.68*10)/10),xr=W-m.r-14,yb=Y(0)-14;
       var maxCh=Math.max(14,Math.floor(Math.min(iw-28,420)/(fs2*0.56))),ln=[],cur='';
