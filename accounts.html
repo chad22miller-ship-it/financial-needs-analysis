@@ -245,6 +245,8 @@ details.how ul{margin:12px 0 0;padding-left:18px;display:grid;gap:7px;max-width:
 .foot{border-top:1px solid var(--line);padding:24px 0 110px;margin-top:40px;color:var(--ink-3);font-size:13px;display:grid;gap:12px}
 .foot p{margin:0;max-width:90ch;line-height:1.55}
 .foot .links{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-2)}
+.foot .contactline{color:var(--ink-2)}
+.foot .contactline a{color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
 .foot a{color:var(--ink-2)}
 .fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:25;box-shadow:var(--shadow-pop)}
 
@@ -490,6 +492,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
 
     <footer class="foot">
       <p>For education and illustration only. This is not financial, tax, legal or investment advice, and it does not recommend any product. Results are hypothetical and use the assumptions listed under "How this is calculated". Actual returns vary and are not guaranteed.</p>
+      <p class="contactline" id="footContact" hidden></p>
       <div class="links"><a href="index.html">← Financial Needs Analysis calculator</a><span id="optLine"><button class="linkbtn" id="optOpen" type="button">Opt out of emails</button></span></div>
     </footer>
 
@@ -560,7 +563,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
 /* ================= SETTINGS: the only part you edit (the same block, with the same values, as the calculator) ================= */
 var CONFIG={
   senderName:"",            /* your name, used in the consent line. Empty = "the person who shared this tool" */
-  contact:{phone:"",email:"",bookingUrl:""},   /* optional; shown after someone taps Learn More */
+  contact:{name:"Chad Miller",phone:"",email:"the1moneymanager@gmail.com",bookingUrl:""},   /* shown after someone taps Learn More, and in the page footer. Phone: Chad's number goes here */
   leadEndpoint:"https://script.google.com/macros/s/AKfycbwQCv3kMhZSdTBq3SF8Bge2Q9Np03jN3n7Qu3M2srtiFE48VpR8FkIbbStouUiCybrsTg/exec",          /* where sign-ups, requests and opt-outs are POSTed. Empty = preview mode (nothing saved) */
   consentVersion:"2026-11-14",
   inflation:0.03,           /* not used by this tool; kept so both pages share one settings block */
@@ -1066,6 +1069,22 @@ function renderContact(){
   }
   box.hidden=!box.childNodes.length;
 }
+/* who to reach, in the page footer (the same line as the calculator's) */
+function renderFootContact(){
+  var p=$('#footContact'),c=CONFIG.contact;if(!p) return;
+  p.textContent='';
+  var bits=[];
+  if(c.phone) bits.push({t:c.phone,h:'tel:'+c.phone.replace(/[^\d+]/g,'')});
+  if(c.email) bits.push({t:c.email,h:'mailto:'+c.email});
+  if(!bits.length){p.hidden=true;return}
+  p.appendChild(document.createTextNode('Questions? Reach '+(c.name||'us')+' at '));
+  bits.forEach(function(b,i){
+    if(i) p.appendChild(document.createTextNode(' or '));
+    var a=document.createElement('a');a.href=b.h;a.textContent=b.t;p.appendChild(a);
+  });
+  p.appendChild(document.createTextNode(". Don't want calls? Email your number and we'll add it to our do-not-call list."));
+  p.hidden=false;
+}
 /* what the page sends for this tool: whole numbers only, mode 'cost' (same take-home cost) or 'same' (same amount in) */
 function acctInputs(){
   return {rate:Math.round(S.rate),current:Math.round(S.current),extra:Math.round(S.extra),years:Math.round(S.years),
@@ -1087,6 +1106,7 @@ function wireLearnMore(){
     var btn=$('#lmBtn');btn.disabled=true;btn.textContent='Sending…';
     sendLead({type:'learn_more',name:ACCESS.name,email:ACCESS.email,topic:topic,topicLabel:topicLabel,contactPref:pref,phone:pref==='call'?phone:'',
       message:$('#lm-msg').value.trim().slice(0,600),
+      callConsent:pref==='call'?$('#lm-phone-wrap .fine').textContent.trim():'',   /* the exact words shown next to the phone box, kept with the number */
       tool:'accounts',acct:acctInputs(),sendReport:false,
       consentVersion:CONFIG.consentVersion,source:getSource(),at:new Date().toISOString()})
       .then(function(r){
@@ -1179,7 +1199,7 @@ function wireReveal(){
 }
 
 /* ================= start ================= */
-buildFields();wireFields();wireToggles();wireReveal();wireGate();wireLearnMore();wireFx();
+buildFields();wireFields();wireToggles();wireReveal();wireGate();wireLearnMore();wireFx();renderFootContact();
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){placeSegs();drawChart()});
 if(document.fonts&&document.fonts.addEventListener) document.fonts.addEventListener('loadingdone',function(){placeSegs();drawChart()});   /* labels are measured as drawn, so draw again once the web font is in */
 var sr=document.createElement('p');sr.id='srSum';sr.className='sr';sr.setAttribute('aria-live','polite');document.body.appendChild(sr);

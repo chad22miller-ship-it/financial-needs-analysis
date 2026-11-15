@@ -391,6 +391,15 @@ tbody td{border-top:1px solid var(--line)}
 a.toollink{text-decoration:none}
 @media (max-width:760px){.toolrow{grid-template-columns:auto minmax(0,1fr);padding:22px;gap:18px}.toolrow .toollink{grid-column:1/-1;justify-self:start}.toolmark{width:64px;height:64px}.toolmark svg{width:30px;height:30px}}
 
+/* "what would you like to learn more about" box (Chad 11-15: a place on the page to type what they need and where they are) */
+.need{padding:30px 0 8px}
+.need h2{font:700 clamp(24px,3vw,32px)/1.15 var(--serif);margin:0 0 8px;text-wrap:balance}
+.need > p{color:var(--ink-2);margin:0 0 18px;max-width:62ch}
+.needform{display:grid;gap:14px;max-width:640px}
+.needform .btn{justify-self:start}
+.foot .contactline{color:var(--ink-2)}
+.foot .contactline a{color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
+
 /* footer + floating button */
 .foot{border-top:1px solid var(--line);padding:24px 0 110px;color:var(--ink-3);font-size:13px;display:grid;gap:12px}
 .foot p{margin:0;max-width:90ch;line-height:1.55}
@@ -732,6 +741,18 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
       <div class="topics" id="topics"></div>
     </section>
 
+    <section class="need" aria-labelledby="needH">
+      <p class="eyebrow">In your own words</p>
+      <h2 id="needH">What would you like to learn more about?</h2>
+      <p>Type what you're needing and where you are, and we'll start there. It goes along with the hypothetical numbers on your screen.</p>
+      <div class="needform">
+        <div class="fld"><label for="need-msg">What are you needing, or what would you like to learn more about?</label><textarea class="inp" id="need-msg" maxlength="600"></textarea></div>
+        <div class="fld"><label for="need-where">Where are you? City or state (optional)</label><input class="inp" id="need-where" type="text" maxlength="60" autocomplete="address-level2"></div>
+        <button class="btn btn-primary" id="needGo" type="button">Continue →</button>
+        <p class="fine">Next, you choose how we reach you. Nothing is sent until you tap Send my request.</p>
+      </div>
+    </section>
+
     <section class="tools" aria-labelledby="toolH">
       <p class="eyebrow">Additional tools</p>
       <div class="toolrow">
@@ -746,6 +767,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
 
     <footer class="foot">
       <p>For education and illustration only. This is not financial, tax, legal or investment advice, and it does not recommend any product. Results use the assumptions listed under "How this is calculated" and are hypothetical illustrations, not predictions. Actual returns vary and are not guaranteed.</p>
+      <p class="contactline" id="footContact" hidden></p>
       <div class="links"><span id="optLine"><button class="linkbtn" id="optOpen" type="button">Opt out of emails</button></span></div>
     </footer>
 
@@ -773,7 +795,8 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
           <p class="fine">Adding a number means you're OK with a call about this request.</p>
           <p class="err" id="lm-phone-e" role="alert"></p>
         </div>
-        <div class="fld"><label for="lm-msg">Anything else? (optional)</label><textarea class="inp" id="lm-msg" maxlength="600"></textarea></div>
+        <div class="fld"><label for="lm-msg">What would you like to learn more about? (optional)</label><textarea class="inp" id="lm-msg" maxlength="600"></textarea></div>
+        <div class="fld"><label for="lm-where">Where are you? City or state (optional)</label><input class="inp" id="lm-where" type="text" maxlength="60" autocomplete="address-level2"></div>
         <label class="check"><input type="checkbox" id="lm-report" checked><span>Also email me a copy of this hypothetical report</span></label>
         <p class="err" id="lm-err" role="alert"></p>
         <button class="btn btn-primary" id="lmBtn" type="submit">Send my request</button>
@@ -816,7 +839,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
 /* ================= SETTINGS: the only part you edit ================= */
 var CONFIG={
   senderName:"",            /* your name, used in the consent line. Empty = "the person who shared this tool" */
-  contact:{phone:"",email:"",bookingUrl:""},   /* optional; shown after someone taps Learn More */
+  contact:{name:"Chad Miller",phone:"",email:"the1moneymanager@gmail.com",bookingUrl:""},   /* shown after someone taps Learn More, and in the page footer. Phone: Chad's number goes here */
   leadEndpoint:"https://script.google.com/macros/s/AKfycbwQCv3kMhZSdTBq3SF8Bge2Q9Np03jN3n7Qu3M2srtiFE48VpR8FkIbbStouUiCybrsTg/exec",          /* where sign-ups, requests and opt-outs are POSTed. Empty = preview mode (nothing saved) */
   consentVersion:"2026-11-14",
   inflation:0.03,
@@ -1547,6 +1570,32 @@ function renderContact(){
   }
   box.hidden=!box.childNodes.length;
 }
+/* who to reach, in the page footer (Chad 11-15: "add in my phone number ... and how to reach me") */
+function renderFootContact(){
+  var p=$('#footContact'),c=CONFIG.contact;if(!p) return;
+  p.textContent='';
+  var bits=[];
+  if(c.phone) bits.push({t:c.phone,h:'tel:'+c.phone.replace(/[^\d+]/g,'')});
+  if(c.email) bits.push({t:c.email,h:'mailto:'+c.email});
+  if(!bits.length){p.hidden=true;return}
+  p.appendChild(document.createTextNode('Questions? Reach '+(c.name||'us')+' at '));
+  bits.forEach(function(b,i){
+    if(i) p.appendChild(document.createTextNode(' or '));
+    var a=document.createElement('a');a.href=b.h;a.textContent=b.t;p.appendChild(a);
+  });
+  p.appendChild(document.createTextNode(". Don't want calls? Email your number and we'll add it to our do-not-call list."));
+  p.hidden=false;
+}
+/* the box on the page: what they need and where they are. Continue opens Learn More with both carried over, so they choose how to be reached. */
+function wireNeed(){
+  var go=$('#needGo');if(!go) return;
+  go.addEventListener('click',function(){
+    SCN=inputs;
+    var msg=$('#need-msg').value.trim().slice(0,600),where=$('#need-where').value.trim().slice(0,60);
+    openSheet('lm','');
+    $('#lm-msg').value=msg;$('#lm-where').value=where;
+  });
+}
 function reportProblem(code){
   var m={
     optout:"Emails are turned off for your address, so we can't send this.",
@@ -1579,11 +1628,14 @@ function wireLearnMore(){
     var btn=$('#lmBtn');btn.disabled=true;btn.textContent='Sending…';
     sendLead({type:'learn_more',name:ACCESS.name,email:ACCESS.email,topic:topic,topicLabel:topicLabel,contactPref:pref,phone:pref==='call'?phone:'',
       message:$('#lm-msg').value.trim().slice(0,600),
+      where:$('#lm-where').value.trim().slice(0,60),
+      callConsent:pref==='call'?$('#lm-phone-wrap .fine').textContent.trim():'',   /* the exact words shown next to the phone box, kept with the number */
       scenario:SCN(),sendReport:$('#lm-report').checked&&!ACCESS.optedOut,
                       consentVersion:CONFIG.consentVersion,source:getSource(),at:new Date().toISOString()})
       .then(function(r){
         btn.disabled=false;btn.textContent='Send my request';
         if(!r.ok){$('#lm-err').textContent="We couldn't send that just now. Check your connection and try again.";return}
+        ['#lm-msg','#lm-where','#need-msg','#need-where'].forEach(function(id){var f=$(id);if(f) f.value=''});   /* sent: the boxes start empty again */
         $('#lmName').textContent=ACCESS.name;
         $('#lmDoneMsg').textContent=r.preview?'Preview mode: nothing was sent. In the live version your request and the hypothetical numbers on your screen would go straight to the person who shared this tool.':lmMessage(r);
         renderContact();
@@ -1665,7 +1717,7 @@ function wireReport(){
 }
 
 /* ================= start ================= */
-buildFields();wireFields(CTX1);wireFields(CTX2);buildTopics();wireTabs(CH1);wireTabs(CH2);wireReveal(CH1);wireReveal(CH2);wireGate();wireLearnMore();wireReport();wireFx();
+buildFields();wireFields(CTX1);wireFields(CTX2);buildTopics();wireTabs(CH1);wireTabs(CH2);wireReveal(CH1);wireReveal(CH2);wireGate();wireLearnMore();wireNeed();wireReport();wireFx();renderFootContact();
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){CH1.place();CH2.place()});
 var sr=document.createElement('p');sr.id='srSum';sr.className='sr';sr.setAttribute('aria-live','polite');document.body.appendChild(sr);
 var saved=null;
