@@ -69,6 +69,7 @@ textarea.inp{resize:vertical;min-height:92px}
 .consent{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--well);border:1.5px solid var(--line);border-radius:14px;padding:14px}
 .consent input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--fill)}
 .consent label{font:400 14px/1.5 var(--sans);letter-spacing:0;color:var(--ink-2);cursor:pointer}
+.consent label a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .fine{font-size:12.5px;line-height:1.5;color:var(--ink-3);margin:0}
 
@@ -361,6 +362,13 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
           </div>
           <p class="err" id="e-consent" role="alert"></p>
         </div>
+        <div>
+          <div class="consent">
+            <input type="checkbox" id="g-terms" aria-describedby="e-terms">
+            <label for="g-terms" id="termsLabel">I have read and agree to the <a href="terms.html" target="_blank" rel="noopener">Terms and Conditions and Privacy Policy</a> (<a href="terms.pdf" download>download a copy</a>).</label>
+          </div>
+          <p class="err" id="e-terms" role="alert"></p>
+        </div>
         <p class="err" id="e-form" role="alert"></p>
         <button class="btn btn-primary" id="gateBtn" type="submit">Open the tool →</button>
         <p class="fine">We save your name, your email and the time you agreed, so you receive what you asked for. You can opt out at any time. This tool is an educational illustration, not financial, tax, legal or investment advice.</p>
@@ -493,7 +501,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
     <footer class="foot">
       <p>For education and illustration only. This is not financial, tax, legal or investment advice, and it does not recommend any product. Results are hypothetical and use the assumptions listed under "How this is calculated". Actual returns vary and are not guaranteed.</p>
       <p class="contactline" id="footContact" hidden></p>
-      <div class="links"><a href="index.html">← Financial Needs Analysis calculator</a><span id="optLine"><button class="linkbtn" id="optOpen" type="button">Opt out of emails</button></span></div>
+      <div class="links"><a href="index.html">← Financial Needs Analysis calculator</a><span id="optLine"><button class="linkbtn" id="optOpen" type="button">Opt out of emails</button></span><a href="terms.html" target="_blank" rel="noopener">Terms and Privacy Policy</a><a href="terms.pdf" download>Download (PDF)</a></div>
     </footer>
 
     <button class="btn btn-primary fab" type="button" data-open="lm">Learn More →</button>
@@ -566,6 +574,7 @@ var CONFIG={
   contact:{name:"Chad Miller",phone:"",email:"the1moneymanager@gmail.com",bookingUrl:""},   /* shown after someone taps Learn More, and in the page footer. Phone: Chad's number goes here */
   leadEndpoint:"https://script.google.com/macros/s/AKfycbwQCv3kMhZSdTBq3SF8Bge2Q9Np03jN3n7Qu3M2srtiFE48VpR8FkIbbStouUiCybrsTg/exec",          /* where sign-ups, requests and opt-outs are POSTed. Empty = preview mode (nothing saved) */
   consentVersion:"2026-11-14",
+  termsVersion:"2026-11-15",   /* the Terms and Conditions and Privacy Policy in terms.html: bump this when they change, and everyone agrees again */
   inflation:0.03,           /* not used by this tool; kept so both pages share one settings block */
   withdrawal:0.04           /* not used by this tool; kept so both pages share one settings block */
 };
@@ -982,8 +991,10 @@ document.addEventListener('click',function(e){
 /* ================= access: gate, session, opt-out ================= */
 var ACCESS=null;
 function consentText(){return $('#consentLabel').textContent.replace(/\s+/g,' ').trim()}
+function termsText(){return $('#termsLabel').textContent.replace(/\s+/g,' ').trim()}
 function setErr(id,msg){$('#'+id).textContent=msg||'';return !!msg}
 function enterTool(a){
+  a.terms=CONFIG.termsVersion;   /* only reached after the terms were agreed to (a saved session older than these terms goes back to the gate) */
   ACCESS=a;
   $('#gate').hidden=true;$('#tool').hidden=false;placeSegs();
   $('#whoName').textContent=a.email;
@@ -1007,30 +1018,32 @@ function wireGate(){
   $('#gateForm').addEventListener('submit',function(e){
     e.preventDefault();
     var name=$('#g-name').value.trim().replace(/\s+/g,' '),email=$('#g-email').value.trim().toLowerCase();
-    var ok=$('#g-consent').checked,hp=$('#g-hp').value;
+    var ok=$('#g-consent').checked,tk=$('#g-terms').checked,hp=$('#g-hp').value;
     setErr('e-form','');
     var b1=setErr('e-name',name?'':'Enter your first name.');
     var b2=setErr('e-email',/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?'':'Enter a valid email address, like name@example.com.');
     var b3=setErr('e-consent',ok?'':'Tick the box to continue. We need your OK before we email you.');
+    var b4=setErr('e-terms',tk?'':'Tick the box to continue. You need to agree to the Terms and Privacy Policy to use this.');
     if(b1){$('#g-name').focus();return}
     if(b2){$('#g-email').focus();return}
     if(b3){$('#g-consent').focus();return}
+    if(b4){$('#g-terms').focus();return}
     var btn=$('#gateBtn');btn.disabled=true;btn.textContent='Saving…';
     function done(){
-      var a={name:name,email:email,optedOut:false};
+      var a={name:name,email:email,optedOut:false,terms:CONFIG.termsVersion};
       store.set(KEY,JSON.stringify(a));
       btn.disabled=false;btn.textContent='Open the tool →';
       enterTool(a);
     }
     if(hp){done();return}   /* a bot filled the hidden field: let it in, send nothing */
-    sendLead({type:'signup',name:name,email:email,consent:true,consentText:consentText(),consentVersion:CONFIG.consentVersion,source:getSource(),at:new Date().toISOString()})
+    sendLead({type:'signup',name:name,email:email,consent:true,consentText:consentText(),consentVersion:CONFIG.consentVersion,terms:true,termsText:termsText(),termsVersion:CONFIG.termsVersion,source:getSource(),at:new Date().toISOString()})
       .then(function(r){
         if(!r.ok){btn.disabled=false;btn.textContent='Open the tool →';setErr('e-form',"We couldn't save that just now. Check your connection and try again.");return}
         done();
       });
   });
   $('#notYou').addEventListener('click',function(){
-    store.del(KEY);$('#g-name').value='';$('#g-email').value='';$('#g-consent').checked=false;showGate();
+    store.del(KEY);$('#g-name').value='';$('#g-email').value='';$('#g-consent').checked=false;$('#g-terms').checked=false;showGate();
   });
   $('#ooYes').addEventListener('click',function(){
     var b=$('#ooYes');b.disabled=true;$('#ooErr').textContent='';
@@ -1205,8 +1218,8 @@ if(document.fonts&&document.fonts.addEventListener) document.fonts.addEventListe
 var sr=document.createElement('p');sr.id='srSum';sr.className='sr';sr.setAttribute('aria-live','polite');document.body.appendChild(sr);
 var saved=null;
 try{saved=JSON.parse(store.get(KEY))}catch(e){}
-if(saved&&typeof saved.name==='string'&&typeof saved.email==='string'&&saved.name&&saved.email) enterTool({name:saved.name,email:saved.email,optedOut:!!saved.optedOut});
-else showGate();
+if(saved&&typeof saved.name==='string'&&typeof saved.email==='string'&&saved.name&&saved.email&&saved.terms===CONFIG.termsVersion) enterTool({name:saved.name,email:saved.email,optedOut:!!saved.optedOut});
+else{showGate();if(saved&&typeof saved.name==='string'&&typeof saved.email==='string'){$('#g-name').value=saved.name;$('#g-email').value=saved.email}}   /* new or changed terms: back to the gate, name and email filled in, both boxes to tick again */
 })();
 </script>
 </body></html>
