@@ -1116,7 +1116,7 @@ function project(s){
 function inputsOf(s){return {contribution:s.contribution,rate:s.rate,savings:s.savings,age:s.age,retire:s.retire,income:s.income,other:s.other,inflation:s.inflation}}
 function inputs(){return inputsOf(S)}
 function inputs2(){return inputsOf(S2)}
-window.__fna={project:project,S:S};   /* test hook: lets a check run the math on sample inputs */
+window.__fna={project:project,S:S,gateProblem:gateProblem,requestProblem:requestProblem};   /* test hook: lets a check run the math on sample inputs */
 
 /* ================= render ================= */
 var LAST=null,LAST2=null,srTimer=0,first2=true,LASTTONE2='';
@@ -1491,6 +1491,24 @@ document.addEventListener('click',function(e){
 
 /* ================= access: gate, session, opt-out ================= */
 var ACCESS=null;
+/* The same address rule as the script's (a stricter rule on one side showed every refused address as a "connection" problem). */
+var EMAIL_OK=/^[a-z0-9._%+\-]+@[a-z0-9\-]+(\.[a-z0-9\-]+)*\.[a-z]{2,}$/;
+if(window.__fna) window.__fna.EMAIL_OK=EMAIL_OK;   /* test hook */
+/* What went wrong, in words: no answer at all is a connection problem; an answer with a reason is not. */
+function gateProblem(r){
+  var c=r&&r.error;
+  if(c==='terms') return "This page is out of date. Reload it, then tick both boxes and try again.";
+  if(c==='invalid') return "That name or email didn't look right. Check them and try again.";
+  if(c==='server') return "We're busy for a moment. Please try again in a minute.";
+  return "We couldn't reach the server. Check your connection and try again.";
+}
+function requestProblem(r){
+  var c=r&&r.error;
+  if(c==='nosignup') return "We couldn't find your sign-up. Reload the page and sign in again.";
+  if(c==='invalid') return "Something about that request didn't look right. Check it and try again.";
+  if(c==='server') return "We're busy for a moment. Please try again in a minute.";
+  return "We couldn't send that just now. Check your connection and try again.";
+}
 function consentText(){return $('#consentLabel').textContent.replace(/\s+/g,' ').trim()}
 function termsText(){return $('#termsLabel').textContent.replace(/\s+/g,' ').trim()}
 function setErr(id,msg){$('#'+id).textContent=msg||'';return !!msg}
@@ -1522,7 +1540,7 @@ function wireGate(){
     var ok=$('#g-consent').checked,tk=$('#g-terms').checked,hp=$('#g-hp').value;
     setErr('e-form','');
     var b1=setErr('e-name',name?'':'Enter your first name.');
-    var b2=setErr('e-email',/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?'':'Enter a valid email address, like name@example.com.');
+    var b2=setErr('e-email',EMAIL_OK.test(email)?'':'Enter a valid email address, like name@example.com.');
     var b3=setErr('e-consent',ok?'':'Tick the box to continue. We need your OK before we email you.');
     var b4=setErr('e-terms',tk?'':'Tick the box to continue. You need to agree to the Terms and Privacy Policy to use this.');
     if(b1){$('#g-name').focus();return}
@@ -1539,7 +1557,7 @@ function wireGate(){
     if(hp){done();return}   /* a bot filled the hidden field: let it in, send nothing */
     sendLead({type:'signup',name:name,email:email,consent:true,consentText:consentText(),consentVersion:CONFIG.consentVersion,terms:true,termsText:termsText(),termsVersion:CONFIG.termsVersion,source:getSource(),at:new Date().toISOString()})
       .then(function(r){
-        if(!r.ok){btn.disabled=false;btn.textContent='Open my calculator →';setErr('e-form',"We couldn't save that just now. Check your connection and try again.");return}
+        if(!r.ok){btn.disabled=false;btn.textContent='Open my calculator →';setErr('e-form',gateProblem(r));return}
         done();
       });
   });
@@ -1647,7 +1665,7 @@ function wireLearnMore(){
                       consentVersion:CONFIG.consentVersion,source:getSource(),at:new Date().toISOString()})
       .then(function(r){
         btn.disabled=false;btn.textContent='Send my request';
-        if(!r.ok){$('#lm-err').textContent="We couldn't send that just now. Check your connection and try again.";return}
+        if(!r.ok){$('#lm-err').textContent=requestProblem(r);return}
         ['#lm-msg','#lm-where','#need-msg','#need-where'].forEach(function(id){var f=$(id);if(f) f.value=''});   /* sent: the boxes start empty again */
         $('#lmName').textContent=ACCESS.name;
         $('#lmDoneMsg').textContent=r.preview?'Preview mode: nothing was sent. In the live version your request and the hypothetical numbers on your screen would go straight to the person who shared this tool.':lmMessage(r);
