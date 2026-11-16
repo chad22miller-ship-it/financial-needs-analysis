@@ -605,14 +605,23 @@ function getSource(){
 /* ================= sending: the one place data leaves the page ================= */
 function sendLead(payload){
   if(!CONFIG.leadEndpoint) return Promise.resolve({ok:true,preview:true});
-  var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},15000);
-  return fetch(CONFIG.leadEndpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ctl.signal})
-    .then(function(res){
-      if(!res.ok) return {ok:false,error:'server'};
-      return res.json().then(function(j){return {ok:!(j&&j.ok===false),error:(j&&j.error)||'',reportSent:!!(j&&j.reportSent),reportError:(j&&j.reportError)||''}},function(){return {ok:true}});
-    })
-    .catch(function(){return {ok:false}})
-    .then(function(r){clearTimeout(to);return r});
+  /* One call. When no answer comes back at all, r.net says why (for example "TypeError: Failed to fetch"), so a failure on someone's phone can be read off the screen. */
+  function once(){
+    var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},15000);
+    return fetch(CONFIG.leadEndpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ctl.signal})
+      .then(function(res){
+        if(!res.ok) return {ok:false,error:'server'};
+        return res.json().then(function(j){return {ok:!(j&&j.ok===false),error:(j&&j.error)||'',reportSent:!!(j&&j.reportSent),reportError:(j&&j.reportError)||''}},function(){return {ok:true}});
+      })
+      .catch(function(e){return {ok:false,net:String((e&&e.name)||'error')+(e&&e.message?': '+e.message:'')}})
+      .then(function(r){clearTimeout(to);return r});
+  }
+  /* A sign-up or an opt-out that got no answer is sent once more after a moment (a phone connection that drops for a second). Never a request that sends a report or a message: that could arrive twice. */
+  var again=payload.type==='signup'||payload.type==='opt_out';
+  return once().then(function(r){
+    if(!again||!r.net||/^AbortError/.test(r.net)) return r;
+    return new Promise(function(go){setTimeout(go,1200)}).then(once);
+  });
 }
 
 /* ================= assumption fields ================= */
@@ -998,14 +1007,14 @@ function gateProblem(r){
   if(c==='terms') return "This page is out of date. Reload it, then tick both boxes and try again.";
   if(c==='invalid') return "That name or email didn't look right. Check them and try again.";
   if(c==='server') return "We're busy for a moment. Please try again in a minute.";
-  return "We couldn't reach the server. Check your connection and try again.";
+  return "We couldn't reach the server"+(r&&r.net?" ("+r.net+")":"")+". Check your connection and try again.";
 }
 function requestProblem(r){
   var c=r&&r.error;
   if(c==='nosignup') return "We couldn't find your sign-up. Reload the page and sign in again.";
   if(c==='invalid') return "Something about that request didn't look right. Check it and try again.";
   if(c==='server') return "We're busy for a moment. Please try again in a minute.";
-  return "We couldn't send that just now. Check your connection and try again.";
+  return "We couldn't send that just now"+(r&&r.net?" ("+r.net+")":"")+". Check your connection and try again.";
 }
 function consentText(){return $('#consentLabel').textContent.replace(/\s+/g,' ').trim()}
 function termsText(){return $('#termsLabel').textContent.replace(/\s+/g,' ').trim()}

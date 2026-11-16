@@ -405,6 +405,7 @@ a.toollink{text-decoration:none}
 .foot{border-top:1px solid var(--line);padding:24px 0 110px;color:var(--ink-3);font-size:13px;display:grid;gap:12px}
 .foot p{margin:0;max-width:90ch;line-height:1.55}
 .foot .links{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-2)}
+.foot .links a{color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
 .fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:25;box-shadow:var(--shadow-pop)}
 
 /* sheets */
@@ -889,14 +890,23 @@ function getSource(){
 /* ================= sending: the one place data leaves the page ================= */
 function sendLead(payload){
   if(!CONFIG.leadEndpoint) return Promise.resolve({ok:true,preview:true});
-  var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},15000);
-  return fetch(CONFIG.leadEndpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ctl.signal})
-    .then(function(res){
-      if(!res.ok) return {ok:false,error:'server'};
-      return res.json().then(function(j){return {ok:!(j&&j.ok===false),error:(j&&j.error)||'',reportSent:!!(j&&j.reportSent),reportError:(j&&j.reportError)||''}},function(){return {ok:true}});
-    })
-    .catch(function(){return {ok:false}})
-    .then(function(r){clearTimeout(to);return r});
+  /* One call. When no answer comes back at all, r.net says why (for example "TypeError: Failed to fetch"), so a failure on someone's phone can be read off the screen. */
+  function once(){
+    var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},15000);
+    return fetch(CONFIG.leadEndpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ctl.signal})
+      .then(function(res){
+        if(!res.ok) return {ok:false,error:'server'};
+        return res.json().then(function(j){return {ok:!(j&&j.ok===false),error:(j&&j.error)||'',reportSent:!!(j&&j.reportSent),reportError:(j&&j.reportError)||''}},function(){return {ok:true}});
+      })
+      .catch(function(e){return {ok:false,net:String((e&&e.name)||'error')+(e&&e.message?': '+e.message:'')}})
+      .then(function(r){clearTimeout(to);return r});
+  }
+  /* A sign-up or an opt-out that got no answer is sent once more after a moment (a phone connection that drops for a second). Never a request that sends a report or a message: that could arrive twice. */
+  var again=payload.type==='signup'||payload.type==='opt_out';
+  return once().then(function(r){
+    if(!again||!r.net||/^AbortError/.test(r.net)) return r;
+    return new Promise(function(go){setTimeout(go,1200)}).then(once);
+  });
 }
 
 /* ================= scenario fields ================= */
@@ -915,12 +925,12 @@ var NEED_GROUPS=[
 ];
 var HOW_GROUPS=[
   {g:"What you could be doing now",items:[
-    {k:"contribution",label:"Monthly savings now",min:0,max:3000,step:250,mark:250,def:250,pre:"$",suf:"/mo",fmt:function(v){return money(v)+"/mo"}},
+    {k:"contribution",label:"Monthly savings now",min:0,max:3000,step:250,mark:250,def:0,pre:"$",suf:"/mo",fmt:function(v){return money(v)+"/mo"}},
     {k:"rate",label:"Assumed interest rate",min:0,max:25,step:1,snap:1,def:6,suf:"% a year",fmt:function(v){return v+"% a year"}},
-    {k:"savings",label:"Invested so far",min:0,max:500000,step:1000,mark:1000,def:5000,hard:5000000,pre:"$",fmt:money}   /* a big-number slider: it moves in $1,000s */
+    {k:"savings",label:"Invested so far",min:0,max:500000,step:1000,mark:1000,def:0,hard:5000000,pre:"$",fmt:money}   /* a big-number slider: it moves in $1,000s */
   ]},
   {g:"Other things that could change it",items:[
-    {k:"other",label:"Assumed Social Security and pension",min:0,max:6000,step:250,mark:250,def:1500,hard:20000,pre:"$",suf:"/mo",fmt:function(v){return money(v)+"/mo"}},
+    {k:"other",label:"Assumed Social Security and pension",min:0,max:6000,step:250,mark:250,def:0,hard:20000,pre:"$",suf:"/mo",fmt:function(v){return money(v)+"/mo"}},
     {k:"inflation",label:"Assumed inflation",min:0,max:10,step:1,snap:1,def:3,suf:"% a year",fmt:function(v){return v+"% a year"}}
   ]}
 ];
@@ -1500,14 +1510,14 @@ function gateProblem(r){
   if(c==='terms') return "This page is out of date. Reload it, then tick both boxes and try again.";
   if(c==='invalid') return "That name or email didn't look right. Check them and try again.";
   if(c==='server') return "We're busy for a moment. Please try again in a minute.";
-  return "We couldn't reach the server. Check your connection and try again.";
+  return "We couldn't reach the server"+(r&&r.net?" ("+r.net+")":"")+". Check your connection and try again.";
 }
 function requestProblem(r){
   var c=r&&r.error;
   if(c==='nosignup') return "We couldn't find your sign-up. Reload the page and sign in again.";
   if(c==='invalid') return "Something about that request didn't look right. Check it and try again.";
   if(c==='server') return "We're busy for a moment. Please try again in a minute.";
-  return "We couldn't send that just now. Check your connection and try again.";
+  return "We couldn't send that just now"+(r&&r.net?" ("+r.net+")":"")+". Check your connection and try again.";
 }
 function consentText(){return $('#consentLabel').textContent.replace(/\s+/g,' ').trim()}
 function termsText(){return $('#termsLabel').textContent.replace(/\s+/g,' ').trim()}
