@@ -390,6 +390,16 @@ tbody td{border-top:1px solid var(--line)}
 .tool-t{font:700 clamp(21px,2.6vw,29px)/1.2 var(--serif);color:var(--white);margin:0 0 8px;text-wrap:balance;font-variant-numeric:lining-nums}
 .tool-d{margin:0;color:var(--ink-2);max-width:50ch;line-height:1.55}
 a.toollink{text-decoration:none}
+.toolrow + .toolrow{margin-top:16px}
+/* taxes on the illustrated income (Chad 11-15: "build that into the calculator as well"): the full calculator's own income, taxed three ways */
+.taxcard{border-top:1px solid var(--line-2);padding-top:26px;display:grid;gap:16px}
+.taxcard .calc2-head .step-p{max-width:70ch}
+.tiles3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tiles3 .tile{border-top:3px solid var(--k,var(--line-2))}
+.tiles3 .tile .eg{display:block;font-size:12px;color:var(--ink-3);margin:-2px 0 4px;font-weight:500}
+@media (max-width:760px){.tiles3{grid-template-columns:minmax(0,1fr)}}
+.taxcard .fine{max-width:78ch}
+.taxrow{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
 @media (max-width:760px){.toolrow{grid-template-columns:auto minmax(0,1fr);padding:22px;gap:18px}.toolrow .toollink{grid-column:1/-1;justify-self:start}.toolmark{width:64px;height:64px}.toolmark svg{width:30px;height:30px}}
 
 /* "what would you like to learn more about" box (Chad 11-15: a place on the page to type what they need and where they are) */
@@ -496,6 +506,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
       <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3.5h12v17l-2.5-1.6L13 20.5l-2-1.6-2.5 1.6L6 20.5z"/><path d="M9 9h6M9 13h6"/></symbol>
       <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
       <symbol id="i-tax" viewBox="0 0 24 24"><path d="M7 3.5h7.5L19 8v12.5H7z"/><path d="M14.5 3.5V8H19"/><circle cx="10.6" cy="12.6" r="1.25"/><circle cx="15.4" cy="17" r="1.25"/><path d="M15.4 11.9l-4.8 5.9"/></symbol>
+      <symbol id="i-steps" viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M5 20.5v-4.5h4v4.5"/><path d="M9 16v-4.5h4v9"/><path d="M13 11.5V7h4v13.5"/><path d="M17 7V3.8h2.8v16.7"/></symbol>
       <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 1 2-2h11v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><path d="M16 13.5h4"/></symbol>
     </g>
   </defs>
@@ -723,6 +734,22 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
             <div id="c2-fieldsFi" class="cfields"></div>
           </section>
         </div>
+
+        <!-- taxes on that income (Chad 11-15: "build that into the calculator as well. That way people can get an actual picture and then explain that too") -->
+        <section class="taxcard" id="taxCard" aria-labelledby="tx-h">
+          <div class="calc2-head">
+            <p class="step-k">Taxes</p>
+            <h3 class="step-h" id="tx-h">How that income could be taxed</h3>
+            <p class="step-p" id="tx-lead"></p>
+          </div>
+          <div class="chips" role="radiogroup" aria-label="Filing status for the tax illustration">
+            <label class="chip"><input type="radio" name="txst" value="single" checked><span>Single</span></label>
+            <label class="chip"><input type="radio" name="txst" value="mfj"><span>Married, joint</span></label>
+          </div>
+          <div class="tiles3" id="tx-tiles"></div>
+          <p class="fine" id="tx-note"></p>
+          <div class="taxrow"><a class="btn btn-gold" id="tx-link" href="taxes.html">See the full tax picture →</a></div>
+        </section>
       </div>
     </div>
 
@@ -771,6 +798,14 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
           <p class="tool-d">A hypothetical side-by-side of taxable, tax-deferred and tax-exempt accounts.</p>
         </div>
         <a class="btn btn-gold toollink" href="accounts.html" aria-describedby="toolH">Open the tool →</a>
+      </div>
+      <div class="toolrow">
+        <span class="toolmark" aria-hidden="true"><svg><use href="#i-steps"/></svg></span>
+        <div class="tooltxt">
+          <h2 class="tool-t" id="toolH2">Tax picture: how money you take out could be taxed</h2>
+          <p class="tool-d">A hypothetical look at a 401(k) or IRA, a taxable account and a Roth, with capital gains and required withdrawals explained.</p>
+        </div>
+        <a class="btn btn-gold toollink" href="taxes.html" aria-describedby="toolH2">Open the tool →</a>
       </div>
     </section>
 
@@ -851,7 +886,7 @@ var CONFIG={
   contact:{name:"Chad Miller",phone:"(385) 520-3988",email:"the1moneymanager@gmail.com",bookingUrl:""},   /* shown after someone taps Learn More, and in the page footer */
   leadEndpoint:"https://script.google.com/macros/s/AKfycbwQCv3kMhZSdTBq3SF8Bge2Q9Np03jN3n7Qu3M2srtiFE48VpR8FkIbbStouUiCybrsTg/exec",          /* where sign-ups, requests and opt-outs are POSTed. Empty = preview mode (nothing saved) */
   consentVersion:"2026-11-14",
-  termsVersion:"2026-11-15.2",   /* the Terms and Conditions and Privacy Policy in terms.html: bump this when they change, and everyone agrees again */
+  termsVersion:"2026-11-16.1",   /* the Terms and Conditions and Privacy Policy in terms.html: bump this when they change, and everyone agrees again */
   inflation:0.03,
   withdrawal:0.04
 };
@@ -1130,6 +1165,110 @@ function inputs(){return inputsOf(S)}
 function inputs2(){return inputsOf(S2)}
 window.__fna={project:project,S:S,gateProblem:gateProblem,requestProblem:requestProblem};   /* test hook: lets a check run the math on sample inputs */
 
+/* ================= the tax engine: a word-for-word copy of taxmath.js (tax_tests/sync_taxmath.py keeps it so) ================= */
+/* TAXMATH:BEGIN */
+var TAX_YEAR=2026;
+var TAX_FACTS={
+  single:{label:"Single",std:16100,brk:[[12400,.10],[50400,.12],[105700,.22],[201775,.24],[256225,.32],[640600,.35],[Infinity,.37]],ltcg:[49450,545500],niit:200000},
+  mfj:{label:"Married filing jointly",std:32200,brk:[[24800,.10],[100800,.12],[211400,.22],[403550,.24],[512450,.32],[768700,.35],[Infinity,.37]],ltcg:[98900,613700],niit:250000},
+  hoh:{label:"Head of household",std:24150,brk:[[17700,.10],[67450,.12],[105700,.22],[201750,.24],[256200,.32],[640600,.35],[Infinity,.37]],ltcg:[66200,579600],niit:200000}
+};
+var NIIT_RATE=.038,EARLY_RATE=.10,WITHHOLD_401K=.20,RMD_MISS_RATE=.25,RMD_FIXED_RATE=.10;
+var RMD_START_AGE=73;
+var RMD_TABLE={73:26.5,74:25.5,75:24.6,76:23.7,77:22.9,78:22.0,79:21.1,80:20.2,81:19.4,82:18.5,83:17.7,84:16.8,85:16.0,86:15.2,87:14.4,88:13.7,89:12.9,90:12.2,
+  91:11.5,92:10.8,93:10.1,94:9.5,95:8.9,96:8.4,97:7.8,98:7.3,99:6.8,100:6.4,101:6.0,102:5.6,103:5.2,104:4.9,105:4.6,106:4.3,107:4.1,108:3.9,109:3.7,110:3.5,
+  111:3.4,112:3.3,113:3.1,114:3.0,115:2.9,116:2.8,117:2.7,118:2.5,119:2.3,120:2.0};
+function taxFacts(status){return TAX_FACTS[status]||TAX_FACTS.single}
+/* One year's federal income tax from three kinds of money: ord = ordinary income (pay, a 401(k) or IRA withdrawal, a short-term gain),
+   ltg = long-term gains taxed at 0/15/20%, nii = the net investment income the 3.8% tax looks at. The standard deduction comes off ordinary income first. */
+function fedDetail(status,ord,ltg,nii){
+  var T=taxFacts(status);
+  ord=Math.max(0,ord||0);ltg=Math.max(0,ltg||0);nii=Math.max(0,nii||0);
+  var gross=ord+ltg,taxable=Math.max(0,gross-T.std),gainsTaxable=Math.min(ltg,taxable),ordTaxable=taxable-gainsTaxable;
+  var ordAmts=[],ordTax=0,lo=0,i;
+  for(i=0;i<T.brk.length;i++){
+    var hi=T.brk[i][0],a=Math.max(0,Math.min(ordTaxable,hi)-lo);
+    ordAmts.push(a);ordTax+=a*T.brk[i][1];lo=hi;
+  }
+  /* gains sit on top of the ordinary income: the part of that stack up to the first breakpoint is taxed at 0%, up to the second at 15%, above it at 20% */
+  var zero=Math.max(0,T.ltcg[0]-ordTaxable),g0=Math.min(gainsTaxable,zero),rest=gainsTaxable-g0;
+  var g15=Math.min(rest,Math.max(0,T.ltcg[1]-Math.max(ordTaxable,T.ltcg[0]))),g20=rest-g15;
+  var gainsTax=g15*.15+g20*.20;
+  var niitBase=Math.min(nii,Math.max(0,gross-T.niit)),niit=niitBase*NIIT_RATE;
+  return {gross:gross,taxable:taxable,ordTaxable:ordTaxable,gainsTaxable:gainsTaxable,ordAmts:ordAmts,ordTax:ordTax,
+    gainAmts:[g0,g15,g20],gainsTax:gainsTax,niitBase:niitBase,niit:niit,income:ordTax+gainsTax,total:ordTax+gainsTax+niit};
+}
+/* Taking `amount` out of three kinds of account, on top of `other` income that year. p = {status, amount, other, profit (0-100: the share of a
+   taxable-account withdrawal that is profit), state (a rough flat percent), term ('long' or 'short'), early (true = under 59 1/2)}.
+   Each scenario is the tax WITH the withdrawal minus the tax WITHOUT it, so the standard deduction and the brackets are used the way a real return uses them. */
+function taxPicture(p,noMarginal){
+  var st=TAX_FACTS[p.status]?p.status:"single",T=TAX_FACTS[st];
+  var amt=Math.max(0,+p.amount||0),oth=Math.max(0,+p.other||0);
+  var pr=Math.min(100,Math.max(0,+p.profit||0))/100,sr=Math.min(100,Math.max(0,+p.state||0))/100;
+  var short=p.term==="short",early=!!p.early,gain=amt*pr;
+  var base=fedDetail(st,oth,0,0);
+  function build(kind,withD,counted,penalty){
+    var lines=[],i,d,fed=withD.income-base.income,niit=withD.niit-base.niit,state=sr*counted;
+    for(i=0;i<T.brk.length;i++){
+      d=withD.ordAmts[i]-base.ordAmts[i];
+      if(d>.005) lines.push({k:"ord",rate:T.brk[i][1],amt:d,tax:d*T.brk[i][1]});
+    }
+    [0,.15,.20].forEach(function(r,j){
+      d=withD.gainAmts[j]-base.gainAmts[j];
+      if(d>.005) lines.push({k:"ltcg",rate:r,amt:d,tax:d*r});
+    });
+    if(niit>.005) lines.push({k:"niit",rate:NIIT_RATE,amt:withD.niitBase,tax:niit});
+    if(penalty>.005) lines.push({k:"early",rate:EARLY_RATE,amt:counted,tax:penalty});
+    if(state>.005) lines.push({k:"state",rate:sr,amt:counted,tax:state});
+    var total=fed+niit+penalty+state;
+    return {kind:kind,amount:amt,counted:counted,coveredByStd:Math.max(0,(withD.gross-base.gross)-(withD.taxable-base.taxable)),
+      fed:fed,niit:niit,early:penalty,state:state,total:total,keep:amt-total,eff:amt>0?total/amt:0,lines:lines,
+      brackets:withD.ordAmts.length};
+  }
+  function scen(kind,a){
+    var g=a*pr,w;
+    if(kind==="def") return build("def",fedDetail(st,oth+a,0,0),a,early?a*EARLY_RATE:0);
+    if(kind==="tax"){
+      w=short?fedDetail(st,oth+g,0,g):fedDetail(st,oth,g,g);
+      return build("tax",w,g,0);
+    }
+    return build("ex",base,0,0);
+  }
+  var out={status:st,term:short?"short":"long",early:early,base:base,def:scen("def",amt),tax:scen("tax",amt),ex:scen("ex",amt)};
+  /* the tax on the next $100 taken out, as a percent: approximate, it can straddle a bracket line */
+  if(!noMarginal){
+    ["def","tax"].forEach(function(k){
+      var a=scen(k,amt),b=scen(k,amt+100);
+      out[k].next=(b.total-a.total)/100;
+    });
+    out.ex.next=0;
+  }
+  /* what a 401(k) pays out up front: 20% is withheld on a taxable payout paid to the owner. That is a prepayment, the return settles it. */
+  out.def.withheld=amt*WITHHOLD_401K;
+  out.def.withheldGap=out.def.withheld-out.def.total;   /* positive = more was withheld than the tax figured here */
+  return out;
+}
+/* A required minimum distribution: the prior December 31 balance divided by the Uniform Lifetime Table number for the age reached this year. */
+function rmdAmount(age,balance){
+  age=Math.round(+age||0);balance=Math.max(0,+balance||0);
+  if(age<RMD_START_AGE) return {due:false,age:age,divisor:0,amount:0};
+  var d=RMD_TABLE[Math.min(age,120)];
+  return {due:true,age:age,divisor:d,amount:balance/d};
+}
+/* The figures as shown: every line is rounded to whole dollars once, and every total and "you could keep" is built from the rounded lines, so a column
+   always adds up on screen (5,167.50 would otherwise show as $5,168 of tax beside $94,833 kept out of $100,000). */
+function taxView(s){
+  var fed=0,niit=0,early=0,state=0;
+  var lines=s.lines.map(function(l){
+    var t=Math.round(l.tax);
+    if(l.k==="ord"||l.k==="ltcg") fed+=t;else if(l.k==="niit") niit+=t;else if(l.k==="early") early+=t;else state+=t;
+    return {k:l.k,rate:l.rate,amt:l.amt,tax:t};
+  });
+  var total=fed+niit+early+state,amt=Math.round(s.amount);
+  return {fed:fed,niit:niit,early:early,state:state,total:total,keep:amt-total,eff:amt>0?total/amt:0,lines:lines};
+}
+/* TAXMATH:END */
+
 /* ================= render ================= */
 var LAST=null,LAST2=null,srTimer=0,first2=true,LASTTONE2='';
 function tween(el,to,instant){
@@ -1196,7 +1335,28 @@ function render2(){   /* calculator 2: the full, all-in-one calculator, with its
   if(!$('#c2-pane-table').hidden) fillTableTo(CH2);
   if(!$('#tool').hidden) drawChartTo(CH2);
   first2=false;
+  renderTax(P);
 }
+/* taxes on the full calculator's income: its illustrated monthly income (today's dollars) x 12, taken out in one year with no other income,
+   taxed three ways with the 2026 IRS figures (the same engine as the tax picture page). A simplified look, shown on this card only. */
+var TXST='single';
+function renderTax(P){
+  if(!$('#taxCard')) return;
+  var mo=Math.round(P.income),yr=mo*12,st=TXST==='mfj'?'a married couple filing jointly':'a single filer';
+  var x=taxPicture({status:TXST,amount:yr,other:0,profit:100,state:0,term:'long',early:false},true);
+  var v={def:taxView(x.def),tax:taxView(x.tax),ex:taxView(x.ex)};
+  function pctOf(t){return yr>0?(t.eff*100).toFixed(1)+'%':'0.0%'}
+  $('#tx-lead').textContent=yr>0
+    ?'The illustrated income above, '+money(mo)+' a month in today\'s dollars, comes to about '+money(yr)+' a year. Here is how taking that much out in one year could be taxed from three kinds of account, using the IRS\'s 2026 federal figures for '+st+' with no other income.'
+    :'Once the illustration shows an income, this card could show how that income might be taxed.';
+  $('#tx-tiles').innerHTML=
+    '<div class="tile" style="--k:#D9B84F"><div class="k">Tax-deferred</div><span class="eg">Like a 401(k) or IRA</span><div class="v">'+money(v.def.total)+'</div><div class="s">'+pctOf(v.def)+' of the withdrawal. All of it counts as ordinary income, taxed in brackets.</div></div>'
+   +'<div class="tile" style="--k:#A9A9AF"><div class="k">Taxable</div><span class="eg">A brokerage account, all profit held over a year</span><div class="v">'+money(v.tax.total)+'</div><div class="s">'+pctOf(v.tax)+' of the withdrawal. Long-term profit is taxed at 0%, 15% or 20%.</div></div>'
+   +'<div class="tile" style="--k:#D8405C"><div class="k">Tax-exempt</div><span class="eg">Like a Roth 401(k) or Roth IRA</span><div class="v">$0</div><div class="s">A qualified Roth withdrawal may not be taxed.</div></div>';
+  $('#tx-note').textContent='A simplified look at federal income tax only. The illustration above still does not include taxes, and this card leaves out state tax, payroll tax, Social Security taxes, early-withdrawal penalties and required minimum distributions. Hypothetical, not tax advice. The tax picture lets you change the amount, your other income, your filing status and how much of a withdrawal is profit.';
+  $('#tx-link').setAttribute('href','taxes.html?amount='+yr+'&status='+TXST);
+}
+$$('input[name=txst]').forEach(function(r){r.addEventListener('change',function(){TXST=r.value;if(LAST2) renderTax(LAST2)})});
 
 /* ================= chart (hand-drawn SVG, one scale for marks, ticks and labels) ================= */
 function niceTicks(max,cnt){

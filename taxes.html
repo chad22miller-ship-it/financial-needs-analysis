@@ -1,0 +1,1446 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Tax Picture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Tax Picture: a third tool on the same setup as the Financial Needs Analysis calculator and the Account Types tool (same gate, header, sheets, motion).
+   Matte black, hairline rules, one card (the controls). The outputs are plain: a sentence, a chart, a table. */
+:root{
+  color-scheme:dark;
+  --bg:#0B0B0C; --bg-glass:rgba(11,11,12,.9); --surface:#151516; --well:#1D1D1F; --line:#2B2B2F; --line-2:#3A3A3F;
+  --ink:#ECEBE8; --ink-2:#B6B5B1; --ink-3:#85858A;
+  --burgundy:#5B1427; --burgundy-deep:#2C0914; --burgundy-glow:#5B1427; --on-burgundy:#EFEDE9; --on-burgundy-2:#C0BBB4;
+  --gold:#A8832E; --gold-bright:#F2C84B; --on-gold:#14100A; --white:#F6F4F0;
+  --metal-lo:#5E4310; --metal-mid:#B8902F; --metal-hi:#F4D87F;
+  --metal:linear-gradient(115deg,#5A400E 0%,#9A7621 13%,#D6B052 27%,#FFF0B0 40%,#E3BF5E 50%,#A8832A 64%,#EBCB73 80%,#6A4C12 100%);
+  --accent-text:#F2C84B; --fill:#9A3049; --track:#38383D; --tick:#5C5C62; --thumb:#F3F1ED; --thumb-ring:#8A2640;
+  --a-tax:#A9A9AF; --a-def:#D9B84F; --a-ex:#D8405C;
+  --grid:rgba(236,235,232,.09); --axis:rgba(236,235,232,.38);
+  --danger:#F08A9B; --focus:#C9A44C; --focus-ring:rgba(201,164,76,.32);
+  --shadow-card:0 12px 28px -20px rgba(0,0,0,.9);
+  --shadow-pop:0 24px 60px -20px rgba(0,0,0,.9);
+  --ripple:rgba(201,164,76,.26); --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --serif:'Playfair Display','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.wrap{max-width:1180px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.mark{display:block;flex:none}
+.points svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+h1,h2,h3,.brand b{font-variant-numeric:lining-nums}
+
+/* preview ribbon */
+.ribbon{background:var(--metal);color:var(--on-gold);font:600 13px/1.3 var(--sans);text-align:center;padding:8px 14px;border-radius:0 0 14px 14px}
+
+/* buttons */
+.btn{appearance:none;border:0;cursor:pointer;border-radius:999px;white-space:nowrap;padding:14px 26px;font-weight:700;font-size:16px;display:inline-flex;gap:10px;align-items:center;justify-content:center;
+  transition:transform .15s ease,box-shadow .2s ease,opacity .2s ease;text-decoration:none}
+.btn:hover{transform:translateY(-1px)}
+.btn[disabled]{opacity:.6;cursor:progress;transform:none}
+.btn-primary{background:var(--burgundy);color:var(--on-burgundy);box-shadow:0 8px 20px -12px rgba(0,0,0,.8)}
+.btn-gold{background:var(--metal);background-size:240% 100%;background-position:0 50%;color:var(--on-gold);
+  box-shadow:inset 0 1px 0 rgba(255,244,196,.6),inset 0 -2px 0 rgba(52,34,0,.4),0 10px 24px -12px rgba(0,0,0,.8);
+  transition:background-position .8s ease,transform .25s var(--ease-spring)}
+.btn-gold:hover{background-position:100% 50%}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn-sm{padding:10px 18px;font-size:14px}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent-text);text-decoration:underline;cursor:pointer;font-size:inherit}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:hover{transform:none}}
+
+/* form controls */
+.fld{display:grid;gap:6px}
+.fld label,.lbl{font:600 13px/1.2 var(--sans);letter-spacing:.03em;color:var(--ink-2)}
+.inp{width:100%;background:var(--well);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:16px;color:var(--ink)}
+.inp:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 4px var(--focus-ring)}
+textarea.inp{resize:vertical;min-height:92px}
+.err{color:var(--danger);font-size:13px;margin:0}
+.err:empty{display:none}
+.consent{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--well);border:1.5px solid var(--line);border-radius:14px;padding:14px}
+.consent input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--fill)}
+.consent label{font:400 14px/1.5 var(--sans);letter-spacing:0;color:var(--ink-2);cursor:pointer}
+.consent label a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.fine{font-size:12.5px;line-height:1.5;color:var(--ink-3);margin:0}
+
+/* gate */
+.gate{padding-block:40px 56px}
+.gate-card{display:grid;grid-template-columns:1.05fr 1fr;max-width:980px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden}
+.gate-side{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 100% 0%,var(--burgundy-glow) 0%,transparent 60%),linear-gradient(150deg,var(--burgundy),var(--burgundy-deep));color:var(--on-burgundy);padding:44px 40px;display:flex;flex-direction:column;gap:22px}
+.gate-side .mark{width:60px;height:60px}
+.gate-side .wm{position:absolute;right:-44px;bottom:-56px;width:300px;height:300px;opacity:.09;pointer-events:none}
+.eyebrow{font:700 12px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase;margin:0}
+.gate-side .eyebrow{color:var(--gold-bright)}
+.gate-side h1{font:700 clamp(30px,3.8vw,40px)/1.15 var(--serif);margin:0;text-wrap:balance}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.points li{display:flex;gap:12px;align-items:flex-start;color:var(--on-burgundy-2);font-size:15.5px}
+.points svg{flex:none;width:22px;height:22px;color:var(--gold-bright);margin-top:1px}
+.gate-form{padding:44px 40px;display:flex;flex-direction:column;gap:14px}
+.gate-form h2{font:700 28px/1.15 var(--serif);margin:0}
+.gate-form .lead{margin:0 0 6px;color:var(--ink-2)}
+@media (max-width:820px){.gate-card{grid-template-columns:minmax(0,1fr)}.gate-side,.gate-form{padding:28px 22px}.gate-side .mark{width:48px;height:48px}}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:14px;padding:12px 0;background:var(--bg-glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand .mark{width:42px;height:42px}
+.brand b{display:block;font:700 19px/1.15 var(--serif)}
+.brand small{display:block;color:var(--ink-3);font-size:12.5px}
+.top .sp{flex:1}
+.who{font-size:13px;color:var(--ink-2);text-align:right;min-width:0}
+.who span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.who .linkbtn{font-size:13px}
+@media (max-width:700px){.who{display:none}.fab{display:none}.brand small{display:none}.brand b{font-size:16px}.brand .mark{width:36px;height:36px}.foot{padding-bottom:40px}}
+
+.intro{padding:14px 0 26px}
+.intro .eyebrow{color:var(--accent-text)}
+.intro h1{font:700 clamp(28px,4vw,44px)/1.15 var(--serif);margin:8px 0 12px;text-wrap:balance;max-width:20ch}
+.intro p{margin:0;color:var(--ink-2);max-width:62ch}
+.intro .back{display:inline-block;margin:0 0 18px;color:var(--ink-3);font-size:13.5px;text-decoration:none;border-bottom:1px solid var(--line-2);padding-bottom:1px;transition:color .2s ease,border-color .2s ease}
+.intro .back:hover{color:var(--ink-2);border-color:var(--ink-3)}
+
+/* the three account types: three columns between hairlines, a short coloured bar over each name */
+.kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);margin:4px 0 44px}
+.kind{padding:24px 28px 26px;min-width:0}
+.kind + .kind{border-left:1px solid var(--line-2)}
+.kind:first-of-type{padding-left:0}
+.kind:last-child{padding-right:0}
+.kind .bar{display:block;width:34px;height:4px;border-radius:2px;background:var(--k);margin-bottom:16px;transition:width .4s var(--ease-spring)}
+.kind:hover .bar{width:68px}
+.kind h3{font:700 clamp(20px,2.2vw,24px)/1.2 var(--serif);color:var(--white);margin:0 0 4px}
+.kind .eg{display:block;font-size:13px;color:var(--ink-3);margin-bottom:12px}
+.kind p{margin:0;color:var(--ink-2);font-size:15px;max-width:38ch}
+@media (max-width:760px){
+  .kinds{grid-template-columns:minmax(0,1fr);margin-bottom:36px}
+  .kind,.kind:first-of-type,.kind:last-child{padding:20px 0 22px}
+  .kind + .kind{border-left:0;border-top:1px solid var(--line-2)}
+}
+
+.sec-head{padding:6px 0 20px}
+.sec-head .eyebrow{color:var(--accent-text)}
+.sec-head h2{font:700 clamp(26px,3.3vw,36px)/1.15 var(--serif);margin:8px 0 8px;text-wrap:balance}
+.sec-head p:last-child{margin:0;color:var(--ink-2);max-width:62ch}
+
+/* shell: the controls card on the left, the plain outputs on the right */
+.shell{display:grid;gap:28px 44px;align-items:start;grid-template-columns:minmax(0,390px) minmax(0,1fr);grid-template-areas:"scn out"}
+@media (max-width:940px){.shell{grid-template-columns:minmax(0,1fr);grid-template-areas:"scn" "out"}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-card)}
+.scenario{grid-area:scn;padding:26px 24px;display:grid;gap:26px;min-width:0}
+.scenario h2{font:700 26px/1.15 var(--serif);margin:0}
+.scenario .sub{margin:4px 0 0;color:var(--ink-3);font-size:14px}
+.grp{display:grid;gap:18px}
+.group-h{font:700 11.5px/1 var(--sans);letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);margin:0}
+.field-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.field-head label{font:600 15px/1.2 var(--sans);color:var(--ink)}
+.field-head output{font:700 16px/1 var(--sans);color:var(--accent-text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hint{margin:4px 0 0;font-size:12.5px;line-height:1.4;color:var(--ink-3)}
+.field .hint{margin-bottom:2px}
+.total{margin:0;padding-top:12px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-3)}
+.total b{color:var(--ink-2);font-weight:700;font-variant-numeric:tabular-nums}
+.pair{display:grid;gap:14px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;margin:2px 0 0;background:transparent;cursor:pointer;--pct:0%}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:99px;background:linear-gradient(to right,var(--fill) var(--pct),var(--track) var(--pct))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-9px;border-radius:50%;background:var(--thumb);border:4px solid var(--thumb-ring);box-shadow:0 0 0 2px var(--surface),0 4px 10px rgba(0,0,0,.35)}
+input[type=range]::-moz-range-track{height:8px;border-radius:99px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:8px;border-radius:99px;background:var(--fill)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--thumb);border:4px solid var(--thumb-ring);box-shadow:0 0 0 2px var(--surface)}
+.rng{position:relative;margin:2px 0 0}
+.rng input[type=range]{margin:0;display:block;position:relative;z-index:1}
+.ticks{position:absolute;left:9px;right:9px;top:23px;height:8px;pointer-events:none}
+.tick{position:absolute;top:0;width:2px;height:4px;margin-left:-1px;border-radius:2px;background:var(--tick);transition:background .2s ease,height .25s var(--ease-spring),transform .25s var(--ease-spring)}
+.tick.maj{height:6px}
+.tick.on{background:var(--fill)}
+.tick.at{background:var(--gold-bright);height:8px;transform:translateY(-1px)}
+input[type=range]:focus-visible{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--surface),0 0 0 7px var(--focus-ring)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 2px var(--surface),0 0 0 7px var(--focus-ring)}
+.num{display:flex;align-items:center;gap:6px;background:var(--well);border:1.5px solid var(--line);border-radius:14px;padding:0 14px;margin-top:6px}
+.num:focus-within{border-color:var(--focus);box-shadow:0 0 0 4px var(--focus-ring)}
+.num span{color:var(--ink-3);font-weight:600}
+.num input{flex:1;min-width:0;border:0;background:transparent;padding:11px 0;font-size:16px;font-variant-numeric:tabular-nums;outline:none}
+
+/* two-choice toggles (How to compare, chart view): buttons with aria-pressed and a sliding pill */
+.seg{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--well);border:1px solid var(--line);border-radius:999px;padding:4px;max-width:100%}
+.seg button{position:relative;z-index:1;border:0;background:transparent;border-radius:999px;padding:9px 16px;font:600 14px/1.2 var(--sans);color:var(--ink-2);cursor:pointer;text-align:center}
+.seg button[aria-pressed=true]{color:var(--ink)}
+.seg .thumb{position:absolute;top:4px;bottom:4px;left:0;width:var(--tw,0);transform:translateX(var(--tx,0));background:var(--surface);border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.35),inset 0 0 0 1px var(--line-2);transition:transform .45s var(--ease-spring),width .45s var(--ease-spring)}
+.seg-full{display:grid;width:100%}
+.seg-full button{padding:10px 8px;font-size:13.5px}
+
+/* outputs: a sentence, a chart, a table, all on hairlines */
+.out{grid-area:out;min-width:0}
+.verdict{padding:2px 0 28px}
+.verdict .eyebrow{color:var(--accent-text)}
+.v-line{font:600 clamp(24px,2.8vw,34px)/1.28 var(--serif);color:var(--white);margin:10px 0 12px;text-wrap:balance;overflow-wrap:anywhere}
+.v-line b{font-weight:700}
+.v-sub{margin:0;color:var(--ink-3);font-size:14px;max-width:62ch}
+.osec{border-top:1px solid var(--line-2);padding:24px 0 30px;min-width:0}
+.sec-title{font:700 clamp(20px,2.2vw,24px)/1.2 var(--serif);color:var(--white);margin:0}
+.chart-head{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;color:var(--ink-2);margin-bottom:8px}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend svg{display:block;flex:none}
+.chart-wrap{position:relative;min-width:0}
+/* click to reveal, same as the calculator's chart: blurred under one button; a click sends a shimmer across while it stays blurry, then it snaps clear. One-way. */
+.reveal-sec{position:relative}
+.reveal-sec.locked,.reveal-sec.revealing{overflow:hidden}
+.reveal-sec.locked .reveal-body{filter:blur(14px) saturate(.85);opacity:.9;pointer-events:none;user-select:none}
+.reveal-cta{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;
+  background:radial-gradient(ellipse at center,rgba(11,11,12,.66) 0%,rgba(11,11,12,.2) 62%,transparent 100%);transition:opacity .3s ease}
+.reveal-cta span{color:var(--ink-2);font-size:14.5px;max-width:36ch;line-height:1.45}
+.reveal-cta.gone{opacity:0;pointer-events:none}
+@keyframes unblur{
+  0%{filter:blur(14px) saturate(.85) brightness(1);opacity:.9;transform:scale(1.01);animation-timing-function:linear}
+  62%{filter:blur(10px) saturate(.95) brightness(1.18);opacity:1;transform:scale(1.01);animation-timing-function:cubic-bezier(.16,1,.3,1)}
+  100%{filter:blur(0) saturate(1) brightness(1);opacity:1;transform:scale(1)}}
+.reveal-sec.revealing .reveal-body{animation:unblur 1.6s both}
+.reveal-sec::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+  background:linear-gradient(105deg,transparent 28%,rgba(255,236,170,0) 38%,rgba(255,243,196,.42) 50%,rgba(255,236,170,0) 62%,transparent 72%);transform:translateX(-100%)}
+.reveal-sec.revealing::after{animation:sheen 1.1s cubic-bezier(.4,0,.2,1) .05s both}
+@keyframes sheen{0%{opacity:1;transform:translateX(-100%)}100%{opacity:1;transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){.reveal-sec.revealing .reveal-body,.reveal-sec.revealing::after{animation:none}.reveal-cta{transition:none}}
+svg.chart{display:block;width:100%;height:auto;touch-action:pan-y}
+.ax{font:500 12px var(--sans);fill:var(--ink-2)}
+.lab{font:600 12px var(--sans);fill:var(--ink)}
+.gl{stroke:var(--grid);stroke-width:1}
+.base{stroke:var(--axis);stroke-width:1}
+.tip{position:absolute;top:4px;left:0;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow-pop);font-size:13px;min-width:190px;z-index:5}
+.tip b{display:block;margin-bottom:4px}
+.tip div{display:flex;justify-content:space-between;gap:16px;font-variant-numeric:tabular-nums}
+.tip span{color:var(--ink-2);display:inline-flex;align-items:center;gap:7px}
+.tip i{display:inline-block;width:10px;height:4px;border-radius:2px}
+.tie{margin:10px 0 0;font-size:13.5px;color:var(--ink-3)}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14.5px}
+.cmp caption{caption-side:top;text-align:left;color:var(--ink-3);font-size:13px;padding:0 0 12px}
+.cmp th,.cmp td{padding:12px 10px;text-align:right;vertical-align:top}
+.cmp thead th{font:600 13px/1.25 var(--sans);color:var(--ink-2);border-bottom:1px solid var(--line-2);padding-bottom:10px}
+.cmp thead th:first-child{width:34%}
+.cmp tbody th{text-align:left;font-weight:500;color:var(--ink-2);padding-left:0}
+.cmp tbody tr + tr > *{border-top:1px solid var(--line)}
+.cmp tbody tr.em > *{border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);color:var(--white);font-weight:700;font-size:16px}
+.cmp tbody tr.em + tr > *{border-top:0}
+.cmp td{color:var(--ink);white-space:nowrap}
+.cmp td .pct{display:block;font-size:12.5px;color:var(--ink-3);font-weight:500}
+.cmp td .neg{color:var(--danger)}
+.cmp .sw{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:7px;vertical-align:3px}
+@media (max-width:560px){.cmp{font-size:13.5px}.cmp th,.cmp td{padding:11px 6px}.cmp tbody tr.em > *{font-size:14.5px}.cmp thead th:first-child{width:30%}}
+details.how{border-top:1px solid var(--line-2);padding:18px 0 0;font-size:14px;color:var(--ink-2)}
+details.how summary{cursor:pointer;font-weight:600;color:var(--ink)}
+details.how ul{margin:12px 0 0;padding-left:18px;display:grid;gap:7px;max-width:70ch}
+.notes{margin:18px 0 0;max-width:70ch;font-size:13px;line-height:1.55;color:var(--ink-3)}
+.cta{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between;border-top:1px solid var(--line-2);padding:26px 0 8px;margin-top:26px}
+.cta p{margin:0;font:600 clamp(18px,2vw,22px)/1.3 var(--serif);color:var(--white);max-width:36ch}
+
+/* footer + floating button */
+.foot{border-top:1px solid var(--line);padding:24px 0 110px;margin-top:40px;color:var(--ink-3);font-size:13px;display:grid;gap:12px}
+.foot p{margin:0;max-width:90ch;line-height:1.55}
+.foot .links{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-2)}
+.foot .contactline{color:var(--ink-2)}
+.foot .contactline a{color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
+.foot a{color:var(--ink-2)}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:25;box-shadow:var(--shadow-pop)}
+
+/* sheets */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(8,8,9,.7);display:grid;place-items:center;overflow:auto;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet{position:relative;width:100%;max-width:540px;background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:30px 28px;box-shadow:var(--shadow-pop);display:grid;gap:14px}
+.sheet h2{font:700 27px/1.15 var(--serif);margin:0 40px 0 0}
+.sheet .lead{margin:0;color:var(--ink-2)}
+.x{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:0;background:var(--well);color:var(--ink);cursor:pointer;font-size:24px;line-height:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{position:relative;display:inline-block}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:10px 18px;border:1.5px solid var(--line);border-radius:999px;background:var(--well);font-weight:600;font-size:14.5px}
+.chip input:checked + span{background:var(--burgundy);border-color:var(--burgundy);color:var(--on-burgundy)}
+.chip input:focus-visible + span{outline:3px solid var(--focus);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.contact{display:grid;gap:8px}
+.contact div{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--well);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:600}
+.contact span{overflow-wrap:anywhere;user-select:all}
+
+/* ===== motion: the same answers to a hover, a tap and a swipe as the calculator ===== */
+.btn:not(.fab),.seg button{position:relative}   /* not .fab: that one is position:fixed (a plain .btn rule here would override it) */
+.btn,.seg button,.fab,.x{overflow:hidden;-webkit-tap-highlight-color:transparent}
+.rip{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--ripple);pointer-events:none;transform:scale(0);animation:rip .65s ease-out forwards}
+@keyframes rip{to{transform:scale(var(--s,16));opacity:0}}
+@keyframes wiggle{0%{transform:none}25%{transform:rotate(-14deg) scale(1.12)}55%{transform:rotate(10deg) scale(1.08)}80%{transform:rotate(-4deg)}100%{transform:none}}
+@keyframes nudge{0%{transform:none}40%{transform:translateX(9px)}100%{transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes sheetIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
+.brand .mark{transition:transform .5s var(--ease-spring),box-shadow .3s ease;
+  transform:translate(calc(var(--dx,0)*1px),calc(var(--dy,0)*1px)) rotate(calc(var(--dx,0)*.7deg))}
+.dragging .mark{transition:none!important}
+.btn .arr{display:inline-block;transition:transform .35s var(--ease-spring)}
+.btn:hover .arr,.fab:hover .arr{transform:translateX(6px)}
+.btn.swish .arr,.fab.swish .arr{animation:nudge .6s var(--ease-spring)}
+.brand:hover .mark,.brand.swish .mark{animation:wiggle .8s var(--ease-spring)}
+.btn:active,.fab:active{transform:scale(.96)}
+.points li{animation:rise .6s var(--ease-spring) both}
+.points li:nth-child(1){animation-delay:.15s}.points li:nth-child(2){animation-delay:.27s}.points li:nth-child(3){animation-delay:.39s}
+.points svg{transition:transform .4s var(--ease-spring)}
+.points li:hover svg{transform:rotate(-14deg) scale(1.2)}
+.fab{animation:rise .6s var(--ease-spring) .4s both}
+.overlay{animation:fadeIn .25s ease}
+.sheet{animation:sheetIn .5s var(--ease-spring)}
+.x{transition:transform .35s var(--ease-spring),background .2s ease}
+.x:hover,.x:focus-visible{transform:rotate(90deg)}
+.x:active{transform:rotate(90deg) scale(.88)}
+#chartBody.slide-in{animation:slideIn .4s var(--ease-spring)}
+input[type=range]::-webkit-slider-thumb{transition:transform .25s var(--ease-spring),box-shadow .2s ease}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.28)}
+input[type=range]::-moz-range-thumb{transition:transform .25s var(--ease-spring)}
+input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ===== tax picture: what this page adds to the account-types look ===== */
+.prefill{margin:12px 0 0!important;color:var(--accent-text)!important;font-size:14px}
+.picks{display:grid;gap:26px}
+.pick{display:grid;gap:9px;min-width:0}
+.pick-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
+.pick-head b{font:700 clamp(18px,2vw,21px)/1.2 var(--serif);color:var(--white)}
+.pick-head .eg{font-size:13px;color:var(--ink-3)}
+.pick-head .sw{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:9px;vertical-align:4px;background:var(--k)}
+.bar-track{display:flex;height:18px;border-radius:99px;overflow:hidden;background:var(--well);border:1px solid var(--line)}
+.b-keep{display:block;height:100%;background:var(--k);transition:width .5s var(--ease-spring)}
+.b-tax{display:block;height:100%;background:repeating-linear-gradient(135deg,#F08A9B 0 5px,#B85266 5px 10px);transition:width .5s var(--ease-spring)}
+.pick-nums{display:flex;flex-wrap:wrap;gap:4px 24px;margin:0;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pick-nums b{color:var(--white);font-size:17px;font-weight:700}
+.pick-nums small{color:var(--ink-3);font-size:13px}
+.pick-note{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-3);max-width:72ch}
+.keyline{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3);margin:4px 0 0}
+.keyline span{display:inline-flex;align-items:center;gap:7px}
+.keyline i{display:inline-block;width:22px;height:9px;border-radius:5px}
+.linegrid{display:grid;gap:22px 30px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px}
+@media (max-width:760px){.linegrid{grid-template-columns:minmax(0,1fr)}}
+.linegrid h4{font:700 15px/1.3 var(--sans);color:var(--white);margin:0 0 8px}
+table.mini{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}
+.mini th,.mini td{padding:8px 4px;text-align:right;vertical-align:top;border-top:1px solid var(--line)}
+.mini th:first-child,.mini td:first-child{text-align:left;color:var(--ink-2);font-weight:500;padding-left:0}
+.mini tr.sum td,.mini tr.sum th{border-top:1px solid var(--line-2);color:var(--white);font-weight:700}
+.mini .zero{color:var(--ink-3)}
+.rmd-lead{margin:10px 0 16px;color:var(--ink-2);max-width:68ch;font-size:15.5px;line-height:1.55}
+.rmd-lead b{color:var(--white)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.stat{background:var(--surface);padding:14px 14px 15px;min-width:0}
+.stat span{display:block;font-size:12.5px;color:var(--ink-3);line-height:1.3;margin-bottom:6px}
+.stat b{display:block;font:700 19px/1.2 var(--sans);color:var(--white);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat small{display:block;margin-top:4px;font-size:12px;color:var(--ink-3)}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.explain-sec{border-top:1px solid var(--line-2);margin-top:46px;padding-top:34px}
+.explain-sec .eyebrow{color:var(--accent-text)}
+.explain-sec h2{font:700 clamp(26px,3.3vw,36px)/1.15 var(--serif);margin:8px 0 22px;text-wrap:balance}
+.explain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 36px}
+.ex-card{border-top:1px solid var(--line);padding:20px 0 26px;min-width:0}
+.ex-card h3{font:700 clamp(17px,1.8vw,20px)/1.25 var(--serif);color:var(--white);margin:0 0 8px}
+.ex-card p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.6}
+.ex-card [data-f]{color:var(--white);font-weight:700;white-space:nowrap}
+@media (max-width:980px){.explain{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.explain{grid-template-columns:minmax(0,1fr)}}
+table.ref{margin-top:2px}
+.cmp.ref td:first-child,.cmp.ref th:first-child{text-align:left}
+.cmp.ref tbody tr > *:first-child{color:var(--white);font-weight:700;padding-left:0}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- PLACEHOLDER MARK: replace this one symbol with your icon and it changes everywhere (same mark as the calculator) -->
+    <symbol id="brand" viewBox="0 0 48 48">
+      <rect width="48" height="48" rx="12" fill="#4A1022"/>
+      <rect x="2.5" y="2.5" width="43" height="43" rx="9.5" fill="none" stroke="#B8933A" stroke-opacity=".55"/>
+      <path d="M11.5 33.5 19.5 25.5 25.5 29.5 36 17.5" fill="none" stroke="#B8933A" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M29.5 17.5H36V24" fill="none" stroke="#B8933A" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <g id="icons" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></symbol>
+    </g>
+  </defs>
+</svg>
+
+<noscript><p style="padding:24px;font:16px system-ui">This tool needs JavaScript turned on.</p></noscript>
+
+<div class="wrap" id="app">
+  <div class="ribbon" id="ribbon" hidden>Preview mode: sign-ups and requests are not being saved yet.</div>
+
+  <!-- ===== ACCESS GATE (same form, same consent wording and the same saved sign-in as the calculator) ===== -->
+  <main id="gate" class="gate">
+    <div class="gate-card">
+      <section class="gate-side">
+        <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#brand"/></svg>
+        <p class="eyebrow">Tax picture</p>
+        <h1>See how money you take out could be taxed.</h1>
+        <ul class="points">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>A 401(k) or IRA, a taxable account and a Roth, side by side</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>Ordinary income, capital gains and required withdrawals, in plain English</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>2026 federal figures, your filing status and your income</li>
+        </ul>
+        <p class="fine" style="color:var(--on-burgundy-2)">Takes about two minutes.</p>
+        <svg class="wm" viewBox="0 0 48 48" aria-hidden="true"><use href="#brand"/></svg>
+      </section>
+      <form id="gateForm" class="gate-form" novalidate>
+        <h2>Open the tool</h2>
+        <p class="lead">Enter your first name and email to get access.</p>
+        <div class="fld">
+          <label for="g-name">First name</label>
+          <input class="inp" id="g-name" name="name" type="text" autocomplete="given-name" maxlength="60" autofocus aria-describedby="e-name">
+          <p class="err" id="e-name" role="alert"></p>
+        </div>
+        <div class="fld">
+          <label for="g-email">Email</label>
+          <input class="inp" id="g-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="120" aria-describedby="e-email">
+          <p class="err" id="e-email" role="alert"></p>
+        </div>
+        <div class="hp" aria-hidden="true"><label for="g-hp">Leave this empty</label><input id="g-hp" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div>
+          <div class="consent">
+            <input type="checkbox" id="g-consent" aria-describedby="e-consent">
+            <label for="g-consent" id="consentLabel"></label>
+          </div>
+          <p class="err" id="e-consent" role="alert"></p>
+        </div>
+        <div>
+          <div class="consent">
+            <input type="checkbox" id="g-terms" aria-describedby="e-terms">
+            <label for="g-terms" id="termsLabel">I have read and agree to the <a href="terms.html" target="_blank" rel="noopener">Terms and Conditions and Privacy Policy</a> (<a href="terms.pdf" download>download a copy</a>).</label>
+          </div>
+          <p class="err" id="e-terms" role="alert"></p>
+        </div>
+        <p class="err" id="e-form" role="alert"></p>
+        <button class="btn btn-primary" id="gateBtn" type="submit">Open the tool →</button>
+        <p class="fine">We save your name, your email and the time you agreed, so you receive what you asked for. You can opt out at any time. This tool is an educational illustration, not financial, tax, legal or investment advice.</p>
+      </form>
+    </div>
+  </main>
+
+  <!-- ===== THE TOOL ===== -->
+  <div id="tool" hidden>
+    <header class="top">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#brand"/></svg>
+        <div><b>Financial Needs Analysis</b><small id="brandSub">Tax picture</small></div>
+      </div>
+      <div class="sp"></div>
+      <div class="who"><span id="whoName"></span><button class="linkbtn" id="notYou" type="button">Not you?</button></div>
+      <button class="btn btn-primary btn-sm" type="button" data-open="lm">Learn More</button>
+    </header>
+
+    <section class="intro">
+      <a class="back" href="index.html">← Financial Needs Analysis calculator</a>
+      <p class="eyebrow">Tax picture</p>
+      <h1>How money you take out could be taxed</h1>
+      <p>This hypothetical illustration shows how taking money out of a 401(k) or IRA, a taxable account and a Roth account could be taxed in 2026, using the federal figures the IRS published. Change the amount, your other income and your filing status to see how the picture might move. It is a teaching tool, not tax advice.</p>
+      <p class="prefill" id="prefillNote" hidden></p>
+    </section>
+
+    <section class="kinds" aria-labelledby="kindsH">
+      <h2 class="sr" id="kindsH">Three places money can come out of</h2>
+      <div class="kind" style="--k:var(--a-def)"><i class="bar" aria-hidden="true"></i>
+        <h3>Tax-deferred</h3><span class="eg">Like a traditional 401(k) or IRA</span>
+        <p>The whole withdrawal counts as ordinary income, taxed in steps called brackets, the same way pay is.</p></div>
+      <div class="kind" style="--k:var(--a-tax)"><i class="bar" aria-hidden="true"></i>
+        <h3>Taxable</h3><span class="eg">A regular brokerage account</span>
+        <p>Only the profit is taxed, not the money you put in. Held more than a year, profit is taxed at 0%, 15% or 20%. Held a year or less, it is taxed like pay.</p></div>
+      <div class="kind" style="--k:var(--a-ex)"><i class="bar" aria-hidden="true"></i>
+        <h3>Tax-exempt</h3><span class="eg">Like a Roth 401(k) or Roth IRA</span>
+        <p>Money goes in after tax. A qualified withdrawal may come out with no federal income tax.</p></div>
+    </section>
+
+    <div class="sec-head">
+      <p class="eyebrow">The illustration</p>
+      <h2>Set the amounts, then compare</h2>
+      <p>Move a slider and everything on the right updates as you go. The figures are the IRS's for tax year 2026.</p>
+    </div>
+
+    <div class="shell">
+      <section class="card scenario" aria-labelledby="scnH">
+        <div>
+          <h2 id="scnH">Assumptions</h2>
+          <p class="sub">Change anything. Nothing here is saved or sent until you tap Learn More.</p>
+        </div>
+        <div id="fieldsA" style="display:grid;gap:26px"></div>
+        <div class="grp">
+          <h3 class="group-h" id="stH">Filing status</h3>
+          <div class="seg seg-full" id="stSeg" role="group" aria-labelledby="stH"><span class="thumb" aria-hidden="true"></span>
+            <button type="button" data-v="single" aria-pressed="true">Single</button>
+            <button type="button" data-v="mfj" aria-pressed="false">Married, joint</button>
+            <button type="button" data-v="hoh" aria-pressed="false">Head of household</button>
+          </div>
+        </div>
+        <div class="grp">
+          <h3 class="group-h" id="tmH">How long the investment was held</h3>
+          <div class="seg seg-full" id="tmSeg" role="group" aria-labelledby="tmH"><span class="thumb" aria-hidden="true"></span>
+            <button type="button" data-v="long" aria-pressed="true">More than a year</button>
+            <button type="button" data-v="short" aria-pressed="false">A year or less</button>
+          </div>
+          <p class="hint" style="margin:0">Only matters for the taxable account.</p>
+        </div>
+        <div class="grp">
+          <h3 class="group-h" id="agH">Your age when you take it out</h3>
+          <div class="seg seg-full" id="agSeg" role="group" aria-labelledby="agH"><span class="thumb" aria-hidden="true"></span>
+            <button type="button" data-v="normal" aria-pressed="true">59½ or older</button>
+            <button type="button" data-v="early" aria-pressed="false">Under 59½</button>
+          </div>
+          <p class="hint" style="margin:0">Taking money out of a 401(k) or IRA early can add a 10% tax.</p>
+        </div>
+        <div id="fieldsB" style="display:grid;gap:26px"></div>
+      </section>
+
+      <div class="out">
+        <section class="verdict" aria-labelledby="verdictEy">
+          <p class="eyebrow" id="verdictEy">In this illustration</p>
+          <p class="v-line" id="verdict"></p>
+          <p class="v-sub" id="verdictSub"></p>
+        </section>
+
+        <section class="osec" aria-labelledby="picksH">
+          <h3 class="sec-title" id="picksH" style="margin-bottom:18px">What goes to tax, and what stays</h3>
+          <div class="picks" id="picks"></div>
+        </section>
+
+        <section class="osec" aria-labelledby="tblH">
+          <h3 class="sec-title" id="tblH" style="margin-bottom:16px">The numbers, side by side</h3>
+          <div class="tbl-wrap" tabindex="0" role="region" aria-labelledby="tblH">
+            <table class="cmp">
+              <caption id="tblCap"></caption>
+              <thead><tr>
+                <th scope="col"><span class="sr">Measure</span></th>
+                <th scope="col"><span class="sw" style="background:var(--a-def)"></span>Tax-deferred</th>
+                <th scope="col"><span class="sw" style="background:var(--a-tax)"></span>Taxable</th>
+                <th scope="col"><span class="sw" style="background:var(--a-ex)"></span>Tax-exempt</th>
+              </tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <details class="how" id="linesBox" style="margin-top:20px">
+            <summary>Bracket by bracket</summary>
+            <div class="linegrid" id="lines"></div>
+          </details>
+        </section>
+
+        <section class="osec reveal-sec locked" id="chartSec" aria-labelledby="chartH">
+          <div class="reveal-cta" id="revealCta">
+            <button class="btn btn-gold" type="button" id="revealBtn" aria-controls="revealBody">Reveal chart</button>
+            <span>See how the tax could change as the amount taken out goes up, in this illustration.</span>
+          </div>
+          <div class="reveal-body" id="revealBody" inert aria-hidden="true">
+            <div class="chart-head">
+              <h3 class="sec-title" id="chartH">Tax at different amounts</h3>
+            </div>
+            <div class="legend" id="legend" aria-hidden="true">
+              <span><svg width="24" height="8"><line x1="0" y1="4" x2="24" y2="4" style="stroke:var(--a-tax)" stroke-width="2.5" stroke-linecap="round"/></svg>Taxable</span>
+              <span><svg width="24" height="8"><line x1="0" y1="4" x2="24" y2="4" style="stroke:var(--a-def)" stroke-width="2.5" stroke-dasharray="6 4"/></svg>Tax-deferred (dashed)</span>
+              <span><svg width="24" height="8"><line x1="0" y1="4" x2="24" y2="4" style="stroke:var(--a-ex)" stroke-width="2.5" stroke-linecap="round"/></svg>Tax-exempt</span>
+            </div>
+            <div class="chart-wrap" id="chartWrap"><div class="tip" id="tip" hidden></div></div>
+            <p class="tie" id="tieNote" hidden></p>
+            <p class="tie">Each line is the tax added by taking that much out, on top of the other income you entered. The vertical line marks your amount.</p>
+          </div>
+        </section>
+
+        <section class="osec" aria-labelledby="rmdH">
+          <h3 class="sec-title" id="rmdH">Required minimum distributions (RMDs)</h3>
+          <p class="rmd-lead" id="rmdLead"></p>
+          <div class="stats" id="rmdStats"></div>
+          <p class="notes" id="rmdNote" style="margin-top:14px"></p>
+        </section>
+      </div>
+    </div>
+
+    <section class="explain-sec" aria-labelledby="exH">
+      <p class="eyebrow">In plain English</p>
+      <h2 id="exH">How you get taxed</h2>
+      <div class="explain">
+        <article class="ex-card"><h3>Ordinary income is taxed in steps</h3>
+          <p>The tax system uses brackets. Only the part of your income that falls inside a bracket is taxed at that bracket's rate, so moving into a higher bracket does not re-tax the dollars below it. A withdrawal from a 401(k) or traditional IRA counts as ordinary income, like pay. The standard deduction (<span data-f="std"></span> for this filing status in 2026) comes off first.</p></article>
+        <article class="ex-card"><h3>Long-term gains: 0%, 15% or 20%</h3>
+          <p>Profit on something held more than a year is a long-term gain. It is stacked on top of your other taxable income, and where it lands sets the rate: 0% up to <span data-f="z"></span> of taxable income, 15% up to <span data-f="f"></span>, and 20% above that, for this filing status in 2026.</p></article>
+        <article class="ex-card"><h3>Short-term gains are taxed like pay</h3>
+          <p>Profit on something held a year or less is a short-term gain. It is added to your ordinary income and taxed in the same brackets as pay, so it could cost more than the same profit held longer.</p></article>
+        <article class="ex-card"><h3>An extra 3.8% at higher incomes</h3>
+          <p>The net investment income tax adds 3.8% on investment income, such as gains, when total income is over <span data-f="n"></span> for this filing status. It applies to the smaller of the investment income or the amount over that line. The IRS does not count 401(k) or IRA withdrawals as investment income for it.</p></article>
+        <article class="ex-card"><h3>Taking money out early, and withholding</h3>
+          <p>Before age 59½, a 401(k) or IRA withdrawal can carry an extra 10% tax on the taxable part, unless an exception applies. Separately, a 401(k) payout paid to you usually has 20% withheld, and an IRA payout 10% unless you choose otherwise. Withholding is a prepayment toward your tax, not the final amount.</p></article>
+        <article class="ex-card"><h3>A Roth works differently</h3>
+          <p>Roth money goes in after tax. A qualified withdrawal is not taxed: the account has been open at least five tax years, and you are 59½ or older, disabled, or the money goes to a beneficiary after death (or up to $10,000 toward a first home from a Roth IRA). Taking out earnings early can be taxed and may carry the 10% tax.</p></article>
+      </div>
+
+      <h3 class="sec-title" style="margin:34px 0 14px">The 2026 numbers for <span id="refStatus"></span></h3>
+      <div class="linegrid">
+        <div class="tbl-wrap" tabindex="0" role="region" aria-label="Ordinary income brackets">
+          <table class="cmp ref"><caption>Ordinary income brackets (taxable income, after the standard deduction)</caption>
+            <thead><tr><th scope="col" style="text-align:left">Rate</th><th scope="col">Taxable income over</th><th scope="col">Up to</th></tr></thead>
+            <tbody id="refOrd"></tbody></table>
+        </div>
+        <div class="tbl-wrap" tabindex="0" role="region" aria-label="Long-term capital gains rates">
+          <table class="cmp ref"><caption>Long-term capital gains (taxable income, gains stacked on top)</caption>
+            <thead><tr><th scope="col" style="text-align:left">Rate</th><th scope="col">Taxable income over</th><th scope="col">Up to</th></tr></thead>
+            <tbody id="refGain"></tbody></table>
+        </div>
+      </div>
+      <p class="notes">Source: IRS Revenue Procedure 2025-32 (tax year 2026): the tax rate tables, the maximum zero rate and 15 percent rate amounts, and the standard deduction. The 3.8% tax is IRS Topic no. 559, the early-withdrawal tax Topics no. 557 and 558, 401(k) withholding Topic no. 413, and required minimum distributions the IRS RMD pages and Publication 590-B (Uniform Lifetime Table). Tax rules change, so please check irs.gov or a tax professional for your own year.</p>
+    </section>
+
+    <details class="how" style="margin-top:34px">
+      <summary>How this is calculated</summary>
+      <ul>
+        <li>Each account's figure is the federal tax <b>with</b> the withdrawal minus the federal tax <b>without</b> it, on the other income you entered, so the standard deduction and the brackets are used the way a tax return uses them.</li>
+        <li><b>Tax-deferred:</b> the whole amount is ordinary income. If you choose "Under 59½", an extra 10% of the amount is added for the early-withdrawal tax. Exceptions are not modeled.</li>
+        <li><b>Taxable:</b> only the share you mark as profit counts. Held more than a year, that profit is stacked on top of your other taxable income and taxed at 0%, 15% or 20%. Held a year or less, it is taxed like pay. Either way, the 3.8% tax can apply when income is over the line shown above.</li>
+        <li><b>Tax-exempt:</b> shown as $0 on the assumption that the withdrawal is a qualified one.</li>
+        <li>A state tax, if you choose a rate, is that flat percent of the income counted (the whole amount for a 401(k) or IRA, the profit for a taxable account). Real state rules differ.</li>
+        <li>"Tax on the next dollar" is the extra tax on the next $100 taken out, as a percent. It is approximate and can change at a bracket line.</li>
+        <li>An RMD is the balance on the prior December 31 divided by the IRS Uniform Lifetime Table number for the age you reach that year, taxed as ordinary income on top of your other income.</li>
+      </ul>
+    </details>
+    <p class="notes">Hypothetical illustration for education only, not tax, legal or investment advice. It uses 2026 U.S. federal income tax figures for single filers, married couples filing jointly and heads of household. Not modeled: payroll taxes, the alternative minimum tax, credits, itemized deductions, the extra deduction for age 65 and over, tax on Social Security benefits, other states' rules, special gain rates for collectibles and real estate, and changes in tax law. Cost basis is handled only through the profit share you choose.</p>
+
+    <div class="cta">
+      <p>Curious how an illustration like this could apply to your own situation?</p>
+      <button class="btn btn-gold" type="button" data-open="lm">Learn More →</button>
+    </div>
+
+    <footer class="foot">
+      <p>For education and illustration only. This is not financial, tax, legal or investment advice, and it does not recommend any product. Results are hypothetical and use the assumptions listed under "How this is calculated". Actual taxes depend on your whole situation and the law in the year you file.</p>
+      <p class="contactline" id="footContact" hidden></p>
+      <div class="links"><a href="index.html">← Financial Needs Analysis calculator</a><a href="accounts.html">Account types</a><span id="optLine"><button class="linkbtn" id="optOpen" type="button">Opt out of emails</button></span><a href="terms.html" target="_blank" rel="noopener">Terms and Privacy Policy</a><a href="terms.pdf" download>Download (PDF)</a></div>
+    </footer>
+
+    <button class="btn btn-primary fab" type="button" data-open="lm">Learn More →</button>
+  </div>
+  <!-- ===== LEARN MORE ===== -->
+  <div class="overlay" id="lm" hidden role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+    <div class="sheet">
+      <button class="x" type="button" data-close="lm" aria-label="Close">×</button>
+      <form id="lmForm" novalidate style="display:grid;gap:14px">
+        <h2 id="lmTitle">Let's talk about your illustration</h2>
+        <p class="lead">Tell us what you'd like to look at. We'll include the assumptions on your screen so we can start where you are.</p>
+        <div class="fld"><label for="lm-topic">What would you like to talk about?</label><select class="inp" id="lm-topic"></select></div>
+        <div class="fld">
+          <span class="lbl" id="lm-pref-l">How should we reach you?</span>
+          <div class="chips" role="radiogroup" aria-labelledby="lm-pref-l">
+            <label class="chip"><input type="radio" name="pref" value="email" checked><span>Email me</span></label>
+            <label class="chip"><input type="radio" name="pref" value="call"><span>Call me</span></label>
+          </div>
+        </div>
+        <div class="fld" id="lm-phone-wrap" hidden>
+          <label for="lm-phone">Phone number</label>
+          <input class="inp" id="lm-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" aria-describedby="lm-phone-e">
+          <p class="fine">Adding a number means you're OK with a call about this request.</p>
+          <p class="err" id="lm-phone-e" role="alert"></p>
+        </div>
+        <div class="fld"><label for="lm-msg">Anything else? (optional)</label><textarea class="inp" id="lm-msg" maxlength="600"></textarea></div>
+        <label hidden><input type="checkbox" id="lm-report"><span>Also email me a copy of my report</span></label><!-- hidden on this page: this tool never emails a report, and sendReport is always false -->
+        <p class="err" id="lm-err" role="alert"></p>
+        <button class="btn btn-primary" id="lmBtn" type="submit">Send my request</button>
+      </form>
+      <div id="lmDone" hidden style="display:grid;gap:14px">
+        <h2>Thank you, <span id="lmName"></span>.</h2>
+        <p class="lead" id="lmDoneMsg"></p>
+        <div class="contact" id="lmContact"></div>
+        <button class="btn btn-ghost" type="button" data-close="lm">Back to my numbers</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OPT OUT ===== -->
+  <div class="overlay" id="oo" hidden role="dialog" aria-modal="true" aria-labelledby="ooTitle">
+    <div class="sheet">
+      <button class="x" type="button" data-close="oo" aria-label="Close">×</button>
+      <div id="ooAsk" style="display:grid;gap:14px">
+        <h2 id="ooTitle">Stop emails?</h2>
+        <p class="lead">We'll stop emailing <b id="ooEmail"></b>. You can keep using the calculator.</p>
+        <p class="err" id="ooErr" role="alert"></p>
+        <div class="row">
+          <button class="btn btn-primary" id="ooYes" type="button">Yes, opt me out</button>
+          <button class="btn btn-ghost" type="button" data-close="oo">Keep emails</button>
+        </div>
+      </div>
+      <div id="ooDone" hidden style="display:grid;gap:14px">
+        <h2>You're opted out.</h2>
+        <p class="lead" id="ooDoneMsg">You won't get more emails. The calculator is still yours to use.</p>
+        <button class="btn btn-ghost" type="button" data-close="oo">Back to my numbers</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+
+/* ================= SETTINGS: the only part you edit (the same block, with the same values, as the calculator) ================= */
+var CONFIG={
+  senderName:"",            /* your name, used in the consent line. Empty = "the person who shared this tool" */
+  contact:{name:"Chad Miller",phone:"(385) 520-3988",email:"the1moneymanager@gmail.com",bookingUrl:""},   /* shown after someone taps Learn More, and in the page footer */
+  leadEndpoint:"https://script.google.com/macros/s/AKfycbwQCv3kMhZSdTBq3SF8Bge2Q9Np03jN3n7Qu3M2srtiFE48VpR8FkIbbStouUiCybrsTg/exec",          /* where sign-ups, requests and opt-outs are POSTed. Empty = preview mode (nothing saved) */
+  consentVersion:"2026-11-14",
+  termsVersion:"2026-11-16.1",   /* the Terms and Conditions and Privacy Policy in terms.html: bump this when they change, and everyone agrees again */
+  inflation:0.03,           /* not used by this tool; kept so both pages share one settings block */
+  withdrawal:0.04           /* not used by this tool; kept so both pages share one settings block */
+};
+
+/* ================= helpers ================= */
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var REDUCED=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function money(n){return '$'+Math.round(n).toLocaleString('en-US')}
+function signed(n){var r=Math.round(n);return r===0?'$0':(r>0?'+':'−')+'$'+Math.abs(r).toLocaleString('en-US')}
+function compact(v){
+  if(v>=1e12){var t=v/1e12;return '$'+(t>=10?Math.round(t):+t.toFixed(2))+'T'}
+  if(v>=1e9){var b=v/1e9;return '$'+(b>=10?Math.round(b):+b.toFixed(2))+'B'}
+  if(v>=1e6){var x=v/1e6;return '$'+(x>=10?Math.round(x):+x.toFixed(2))+'M'}
+  if(v>=1e3){var y=v/1e3;return '$'+(+y.toFixed(y>=100?0:1))+'K'}
+  return '$'+Math.round(v);
+}
+var store={
+  get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  del:function(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+var KEY='fna.access.v1';   /* the same key as the calculator, so a visitor who signed in there is not asked again on the same site */
+function getSource(){
+  try{var q=new URLSearchParams(location.search);var v=q.get('ref')||q.get('src')||q.get('k')||'';return v.replace(/[^\w\-]/g,'').slice(0,40)}catch(e){return ''}
+}
+
+/* ================= sending: the one place data leaves the page ================= */
+function sendLead(payload){
+  if(!CONFIG.leadEndpoint) return Promise.resolve({ok:true,preview:true});
+  /* One call. When no answer comes back at all, r.net says why (for example "TypeError: Failed to fetch"), so a failure on someone's phone can be read off the screen. */
+  function once(){
+    var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},15000);
+    return fetch(CONFIG.leadEndpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ctl.signal})
+      .then(function(res){
+        if(!res.ok) return {ok:false,error:'server'};
+        return res.json().then(function(j){return {ok:!(j&&j.ok===false),error:(j&&j.error)||'',reportSent:!!(j&&j.reportSent),reportError:(j&&j.reportError)||''}},function(){return {ok:true}});
+      })
+      .catch(function(e){return {ok:false,net:String((e&&e.name)||'error')+(e&&e.message?': '+e.message:'')}})
+      .then(function(r){clearTimeout(to);return r});
+  }
+  /* A sign-up or an opt-out that got no answer is sent once more after a moment (a phone connection that drops for a second). Never a request that sends a report or a message: that could arrive twice. */
+  var again=payload.type==='signup'||payload.type==='opt_out';
+  return once().then(function(r){
+    if(!again||!r.net||/^AbortError/.test(r.net)) return r;
+    return new Promise(function(go){setTimeout(go,1200)}).then(once);
+  });
+}
+/* ================= the tax engine: a word-for-word copy of taxmath.js (tax_tests/sync_taxmath.py keeps it so) ================= */
+/* TAXMATH:BEGIN */
+var TAX_YEAR=2026;
+var TAX_FACTS={
+  single:{label:"Single",std:16100,brk:[[12400,.10],[50400,.12],[105700,.22],[201775,.24],[256225,.32],[640600,.35],[Infinity,.37]],ltcg:[49450,545500],niit:200000},
+  mfj:{label:"Married filing jointly",std:32200,brk:[[24800,.10],[100800,.12],[211400,.22],[403550,.24],[512450,.32],[768700,.35],[Infinity,.37]],ltcg:[98900,613700],niit:250000},
+  hoh:{label:"Head of household",std:24150,brk:[[17700,.10],[67450,.12],[105700,.22],[201750,.24],[256200,.32],[640600,.35],[Infinity,.37]],ltcg:[66200,579600],niit:200000}
+};
+var NIIT_RATE=.038,EARLY_RATE=.10,WITHHOLD_401K=.20,RMD_MISS_RATE=.25,RMD_FIXED_RATE=.10;
+var RMD_START_AGE=73;
+var RMD_TABLE={73:26.5,74:25.5,75:24.6,76:23.7,77:22.9,78:22.0,79:21.1,80:20.2,81:19.4,82:18.5,83:17.7,84:16.8,85:16.0,86:15.2,87:14.4,88:13.7,89:12.9,90:12.2,
+  91:11.5,92:10.8,93:10.1,94:9.5,95:8.9,96:8.4,97:7.8,98:7.3,99:6.8,100:6.4,101:6.0,102:5.6,103:5.2,104:4.9,105:4.6,106:4.3,107:4.1,108:3.9,109:3.7,110:3.5,
+  111:3.4,112:3.3,113:3.1,114:3.0,115:2.9,116:2.8,117:2.7,118:2.5,119:2.3,120:2.0};
+function taxFacts(status){return TAX_FACTS[status]||TAX_FACTS.single}
+/* One year's federal income tax from three kinds of money: ord = ordinary income (pay, a 401(k) or IRA withdrawal, a short-term gain),
+   ltg = long-term gains taxed at 0/15/20%, nii = the net investment income the 3.8% tax looks at. The standard deduction comes off ordinary income first. */
+function fedDetail(status,ord,ltg,nii){
+  var T=taxFacts(status);
+  ord=Math.max(0,ord||0);ltg=Math.max(0,ltg||0);nii=Math.max(0,nii||0);
+  var gross=ord+ltg,taxable=Math.max(0,gross-T.std),gainsTaxable=Math.min(ltg,taxable),ordTaxable=taxable-gainsTaxable;
+  var ordAmts=[],ordTax=0,lo=0,i;
+  for(i=0;i<T.brk.length;i++){
+    var hi=T.brk[i][0],a=Math.max(0,Math.min(ordTaxable,hi)-lo);
+    ordAmts.push(a);ordTax+=a*T.brk[i][1];lo=hi;
+  }
+  /* gains sit on top of the ordinary income: the part of that stack up to the first breakpoint is taxed at 0%, up to the second at 15%, above it at 20% */
+  var zero=Math.max(0,T.ltcg[0]-ordTaxable),g0=Math.min(gainsTaxable,zero),rest=gainsTaxable-g0;
+  var g15=Math.min(rest,Math.max(0,T.ltcg[1]-Math.max(ordTaxable,T.ltcg[0]))),g20=rest-g15;
+  var gainsTax=g15*.15+g20*.20;
+  var niitBase=Math.min(nii,Math.max(0,gross-T.niit)),niit=niitBase*NIIT_RATE;
+  return {gross:gross,taxable:taxable,ordTaxable:ordTaxable,gainsTaxable:gainsTaxable,ordAmts:ordAmts,ordTax:ordTax,
+    gainAmts:[g0,g15,g20],gainsTax:gainsTax,niitBase:niitBase,niit:niit,income:ordTax+gainsTax,total:ordTax+gainsTax+niit};
+}
+/* Taking `amount` out of three kinds of account, on top of `other` income that year. p = {status, amount, other, profit (0-100: the share of a
+   taxable-account withdrawal that is profit), state (a rough flat percent), term ('long' or 'short'), early (true = under 59 1/2)}.
+   Each scenario is the tax WITH the withdrawal minus the tax WITHOUT it, so the standard deduction and the brackets are used the way a real return uses them. */
+function taxPicture(p,noMarginal){
+  var st=TAX_FACTS[p.status]?p.status:"single",T=TAX_FACTS[st];
+  var amt=Math.max(0,+p.amount||0),oth=Math.max(0,+p.other||0);
+  var pr=Math.min(100,Math.max(0,+p.profit||0))/100,sr=Math.min(100,Math.max(0,+p.state||0))/100;
+  var short=p.term==="short",early=!!p.early,gain=amt*pr;
+  var base=fedDetail(st,oth,0,0);
+  function build(kind,withD,counted,penalty){
+    var lines=[],i,d,fed=withD.income-base.income,niit=withD.niit-base.niit,state=sr*counted;
+    for(i=0;i<T.brk.length;i++){
+      d=withD.ordAmts[i]-base.ordAmts[i];
+      if(d>.005) lines.push({k:"ord",rate:T.brk[i][1],amt:d,tax:d*T.brk[i][1]});
+    }
+    [0,.15,.20].forEach(function(r,j){
+      d=withD.gainAmts[j]-base.gainAmts[j];
+      if(d>.005) lines.push({k:"ltcg",rate:r,amt:d,tax:d*r});
+    });
+    if(niit>.005) lines.push({k:"niit",rate:NIIT_RATE,amt:withD.niitBase,tax:niit});
+    if(penalty>.005) lines.push({k:"early",rate:EARLY_RATE,amt:counted,tax:penalty});
+    if(state>.005) lines.push({k:"state",rate:sr,amt:counted,tax:state});
+    var total=fed+niit+penalty+state;
+    return {kind:kind,amount:amt,counted:counted,coveredByStd:Math.max(0,(withD.gross-base.gross)-(withD.taxable-base.taxable)),
+      fed:fed,niit:niit,early:penalty,state:state,total:total,keep:amt-total,eff:amt>0?total/amt:0,lines:lines,
+      brackets:withD.ordAmts.length};
+  }
+  function scen(kind,a){
+    var g=a*pr,w;
+    if(kind==="def") return build("def",fedDetail(st,oth+a,0,0),a,early?a*EARLY_RATE:0);
+    if(kind==="tax"){
+      w=short?fedDetail(st,oth+g,0,g):fedDetail(st,oth,g,g);
+      return build("tax",w,g,0);
+    }
+    return build("ex",base,0,0);
+  }
+  var out={status:st,term:short?"short":"long",early:early,base:base,def:scen("def",amt),tax:scen("tax",amt),ex:scen("ex",amt)};
+  /* the tax on the next $100 taken out, as a percent: approximate, it can straddle a bracket line */
+  if(!noMarginal){
+    ["def","tax"].forEach(function(k){
+      var a=scen(k,amt),b=scen(k,amt+100);
+      out[k].next=(b.total-a.total)/100;
+    });
+    out.ex.next=0;
+  }
+  /* what a 401(k) pays out up front: 20% is withheld on a taxable payout paid to the owner. That is a prepayment, the return settles it. */
+  out.def.withheld=amt*WITHHOLD_401K;
+  out.def.withheldGap=out.def.withheld-out.def.total;   /* positive = more was withheld than the tax figured here */
+  return out;
+}
+/* A required minimum distribution: the prior December 31 balance divided by the Uniform Lifetime Table number for the age reached this year. */
+function rmdAmount(age,balance){
+  age=Math.round(+age||0);balance=Math.max(0,+balance||0);
+  if(age<RMD_START_AGE) return {due:false,age:age,divisor:0,amount:0};
+  var d=RMD_TABLE[Math.min(age,120)];
+  return {due:true,age:age,divisor:d,amount:balance/d};
+}
+/* The figures as shown: every line is rounded to whole dollars once, and every total and "you could keep" is built from the rounded lines, so a column
+   always adds up on screen (5,167.50 would otherwise show as $5,168 of tax beside $94,833 kept out of $100,000). */
+function taxView(s){
+  var fed=0,niit=0,early=0,state=0;
+  var lines=s.lines.map(function(l){
+    var t=Math.round(l.tax);
+    if(l.k==="ord"||l.k==="ltcg") fed+=t;else if(l.k==="niit") niit+=t;else if(l.k==="early") early+=t;else state+=t;
+    return {k:l.k,rate:l.rate,amt:l.amt,tax:t};
+  });
+  var total=fed+niit+early+state,amt=Math.round(s.amount);
+  return {fed:fed,niit:niit,early:early,state:state,total:total,keep:amt-total,eff:amt>0?total/amt:0,lines:lines};
+}
+/* TAXMATH:END */
+
+/* ================= assumption fields ================= */
+var GROUPS=[
+  {into:"fieldsA",g:"The withdrawal",items:[
+    {k:"amount",label:"Money you take out",hint:"The same amount comes out of each kind of account, so you can compare them.",min:0,max:1000000,step:1000,def:100000,pre:"$",fmt:function(v){return money(v)}},
+    {k:"other",label:"Other income that year",hint:"Pay, a pension or anything else you also earn that year. It decides which brackets the withdrawal lands in.",min:0,max:500000,step:1000,def:0,pre:"$",fmt:function(v){return money(v)}},
+    {k:"profit",label:"Share of a taxable-account withdrawal that is profit",hint:"Only the profit is taxed, not the money you put in. If you put in $50,000 and it grew to $100,000, half is profit.",min:0,max:100,step:5,def:100,suf:"%",fmt:function(v){return v+"%"}},
+    {k:"state",label:"State income tax rate (rough)",hint:"A flat rate on the income counted. Florida and several other states have no state income tax.",min:0,max:13,step:1,def:0,suf:"%",fmt:function(v){return v+"%"}}
+  ]},
+  {into:"fieldsB",g:"Required minimum distribution (RMD)",items:[
+    {k:"rmdAge",label:"Age you reach this year",hint:"RMDs apply to 401(k)s and traditional IRAs.",min:65,max:100,step:1,def:75,suf:"yrs",fmt:function(v){return v+" years"}},
+    {k:"rmdBal",label:"Balance on last December 31",hint:"Your 401(k) and traditional IRA balances at the end of last year.",min:0,max:3000000,step:10000,def:500000,pre:"$",fmt:function(v){return money(v)}}
+  ]}
+];
+var FM={};var S={};
+GROUPS.forEach(function(g){g.items.forEach(function(f){FM[f.k]=f;S[f.k]=f.def})});
+var STATUS='single',TERM='long',AGEBAND='normal';   /* the three two- and three-choice toggles */
+
+function fieldHtml(f){
+  return '<div class="field"><div class="field-head"><label for="n-'+f.k+'">'+f.label+'</label><output id="o-'+f.k+'" for="n-'+f.k+' r-'+f.k+'"></output></div>'
+    +(f.hint?'<p class="hint" id="h-'+f.k+'">'+f.hint+'</p>':'')
+    +'<div class="rng"><input type="range" id="r-'+f.k+'" min="'+f.min+'" max="'+f.max+'" step="'+f.step+'" aria-label="'+f.label+' slider"'+(f.hint?' aria-describedby="h-'+f.k+'"':'')+'></div>'
+    +'<div class="num">'+(f.pre?'<span aria-hidden="true">'+f.pre+'</span>':'')
+    +'<input id="n-'+f.k+'" type="text" inputmode="numeric" autocomplete="off"'+(f.hint?' aria-describedby="h-'+f.k+'"':'')+'>'
+    +(f.suf?'<span aria-hidden="true">'+f.suf+'</span>':'')+'</div></div>';
+}
+function buildFields(){
+  var into={};
+  GROUPS.forEach(function(g){
+    into[g.into]=(into[g.into]||'')+'<div class="grp"><h3 class="group-h">'+g.g+'</h3>'+g.items.map(fieldHtml).join('')+'</div>';
+  });
+  Object.keys(into).forEach(function(id){$('#'+id).innerHTML=into[id]});
+}
+function parseNum(s){var t=String(s).replace(/[^0-9.]/g,'');if(t==='')return null;var v=parseFloat(t);return isFinite(v)?v:null}
+function clampF(f,v){return Math.min(f.max,Math.max(f.min,Math.round(v)))}
+function syncField(k,skipNum){
+  var f=FM[k],r=$('#r-'+k),n=$('#n-'+k),o=$('#o-'+k);
+  r.value=Math.min(+r.max,S[k]);
+  var lo=+r.min,hi=+r.max;
+  var pct=hi>lo?(Math.min(Math.max(S[k],lo),hi)-lo)/(hi-lo)*100:0;
+  r.style.setProperty('--pct',pct+'%');
+  if(!skipNum) n.value=S[k].toLocaleString('en-US');
+  o.textContent=f.fmt(S[k]);
+}
+function setVal(k,v,src){
+  S[k]=clampF(FM[k],v);
+  syncField(k,src==='num');   /* only the slider that moved is redrawn: a drag fires dozens of these a second */
+  render();
+}
+function wireFields(){
+  Object.keys(FM).forEach(function(k){
+    var f=FM[k],r=$('#r-'+k),n=$('#n-'+k);
+    r.addEventListener('input',function(){setVal(k,+r.value,'range')});
+    n.addEventListener('input',function(){var v=parseNum(n.value);if(v!==null) setVal(k,v,'num')});
+    n.addEventListener('blur',function(){syncField(k,false)});
+    n.addEventListener('keydown',function(e){
+      if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();setVal(k,S[k]+(e.key==='ArrowUp'?1:-1)*f.step,'key')}
+    });
+  });
+  Object.keys(FM).forEach(function(k){syncField(k,false)});
+}
+
+/* ================= the math lives in the engine above; this is only what the page asks of it ================= */
+function params(){return {status:STATUS,amount:S.amount,other:S.other,profit:S.profit,state:S.state,term:TERM,early:AGEBAND==='early'}}
+function withAmount(p,a){var q={};Object.keys(p).forEach(function(k){q[k]=p[k]});q.amount=a;return q}
+window.__tax={picture:taxPicture,rmd:rmdAmount,S:S,params:params,state:function(){return {status:STATUS,term:TERM,age:AGEBAND,last:LAST}}};   /* test hook */
+
+/* ================= render ================= */
+var LAST=null;
+var ACCTS=['def','tax','ex'];
+var NAMES={def:'tax-deferred account',tax:'taxable account',ex:'Roth account'};
+function pct(x,d){return (x*100).toFixed(d==null?1:d)+'%'}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function noteFor(k,R){
+  var s=R[k],p=params(),st=taxFacts(STATUS);
+  if(k==='def'){
+    var t='All '+money(R.def.amount)+' counts as ordinary income, taxed in brackets like pay. '+money(s.coveredByStd)+' of it is covered by the standard deduction.';
+    if(p.early) t+=' The extra 10% for taking it out before 59½ is included (an exception could remove it).';
+    if(s.amount>0){
+      var g=s.withheld-R.v.def.total;
+      t+=' A 401(k) payout usually has 20% ('+money(s.withheld)+') withheld up front, which is a prepayment: against the tax figured here that is '+(Math.abs(g)<1?'about even':(g>0?money(g)+' more, which could come back as a refund':money(-g)+' less, so more could be owed'))+'.';
+    }
+    return t;
+  }
+  if(k==='tax'){
+    if(R.tax.counted<=0) return 'With no profit in the withdrawal, only your own money comes back, and no income tax is owed on it.';
+    var t2=money(s.counted)+' of the withdrawal is profit; the other '+money(s.amount-s.counted)+' is your own money coming back, which is not taxed.';
+    if(TERM==='short') t2+=' Held a year or less, the profit is taxed like pay.';
+    else t2+=' Held more than a year, the profit is stacked on top of your other income and taxed at 0%, 15% or 20%.';
+    if(s.niit>0) t2+=' The extra 3.8% applies because income is over '+money(st.niit)+'.';
+    return t2;
+  }
+  return 'A qualified withdrawal is not taxed. That takes at least five tax years since the first Roth contribution and age 59½ or older (or disability, or a transfer after death). Taking out earnings sooner could mean tax and the extra 10%.';
+}
+function verdictFor(R){
+  var a=R.def.amount;
+  if(a<=0) return {h:'Add an amount taken out, and the three kinds of account could be compared here.',s:'The amount is $0 in this illustration.'};
+  var wst=S.state>0?'federal and state tax':'federal tax';
+  var tk=TERM==='short'?'profit held a year or less':'long-term profit';
+  var h='In this illustration, taking out <b>'+money(a)+'</b> could cost about <b>'+money(R.v.def.total)+'</b> in '+wst+' from a tax-deferred account (a 401(k) or IRA), '
+    +'<b>'+money(R.v.tax.total)+'</b> from a taxable account ('+tk+'), and <b>$0</b> from a Roth account if the withdrawal is qualified.';
+  var s='Based on 2026 federal figures for '+taxFacts(STATUS).label.toLowerCase()+', with '+money(S.other)+' of other income'+(S.profit<100?' and '+S.profit+'% of the taxable-account withdrawal counted as profit':'')+'. A hypothetical illustration, not tax advice.';
+  return {h:h,s:s};
+}
+function fillPicks(){
+  var R=LAST,c={def:'Tax-deferred',tax:'Taxable',ex:'Tax-exempt (Roth)'},eg={def:'Like a 401(k) or traditional IRA',tax:'A regular brokerage account',ex:'Like a Roth 401(k) or Roth IRA'};
+  var kv={def:'var(--a-def)',tax:'var(--a-tax)',ex:'var(--a-ex)'};
+  $('#picks').innerHTML=ACCTS.map(function(k){
+    var s=R[k],v=R.v[k],a=s.amount,tp=a>0?Math.min(100,Math.max(0,v.total/Math.round(a)*100)):0,kp=100-tp;
+    return '<div class="pick" style="--k:'+kv[k]+'"><div class="pick-head"><b><i class="sw" aria-hidden="true"></i>'+c[k]+'</b><span class="eg">'+eg[k]+'</span></div>'
+      +'<div class="bar-track" role="img" aria-label="'+c[k]+': '+money(v.total)+' of tax and '+money(v.keep)+' kept out of '+money(a)+'"><i class="b-keep" style="width:'+kp.toFixed(2)+'%"></i><i class="b-tax" style="width:'+tp.toFixed(2)+'%"></i></div>'
+      +'<p class="pick-nums"><span>Tax <b>'+money(v.total)+'</b> <small>'+(a>0?pct(v.eff):'0.0%')+' of it</small></span><span>You could keep <b>'+money(v.keep)+'</b></span></p>'
+      +'<p class="pick-note">'+esc(noteFor(k,R))+'</p></div>';
+  }).join('')
+    +'<p class="keyline" aria-hidden="true"><span><i style="background:var(--a-def)"></i>What you could keep</span><span><i style="background:repeating-linear-gradient(135deg,#F08A9B 0 5px,#B85266 5px 10px)"></i>Tax</span></p>';
+}
+function fillTable(){
+  var R=LAST;
+  function cells(fn){return ACCTS.map(function(a){return '<td>'+fn(a)+'</td>'}).join('')}
+  function row(label,fn,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><th scope="row">'+label+'</th>'+cells(fn)+'</tr>'}
+  var h=row('Money taken out',function(a){return money(R[a].amount)})
+   +row('Counted as taxable income',function(a){return money(R[a].counted)})
+   +row('Covered by the standard deduction',function(a){return R[a].counted>0?money(R[a].coveredByStd):'—'})
+   +row('Federal income tax',function(a){return money(R.v[a].fed)})
+   +row('Extra 3.8% on investment income',function(a){return money(R.v[a].niit)});
+  if(AGEBAND==='early') h+=row('Extra 10% for taking it out early',function(a){return money(R.v[a].early)});
+  if(S.state>0) h+=row('State tax (rough)',function(a){return money(R.v[a].state)});
+  h+=row('Total tax',function(a){return money(R.v[a].total)},'em')
+   +row('You could keep',function(a){return money(R.v[a].keep)})
+   +row('Tax as a share of what comes out',function(a){return R[a].amount>0?pct(R.v[a].eff):'—'})
+   +row('Tax on the next dollar (about)',function(a){return R[a].next!=null&&R[a].amount>=0?pct(R[a].next,0):'—'});
+  $('#tbody').innerHTML=h;
+  $('#tblCap').textContent='Hypothetical 2026 federal figures for '+taxFacts(STATUS).label.toLowerCase()+', with '+money(S.other)+' of other income';
+}
+function lineLabel(l){
+  if(l.k==='ord') return 'Taxed at '+Math.round(l.rate*100)+'% as ordinary income';
+  if(l.k==='ltcg') return 'Taxed at '+Math.round(l.rate*100)+'% as a long-term gain';
+  if(l.k==='niit') return '3.8% extra on investment income';
+  if(l.k==='early') return '10% extra for taking it out early';
+  return 'State tax at '+(Math.round(l.rate*1000)/10)+'% (rough)';
+}
+function fillLines(){
+  var R=LAST;
+  function block(k,title){
+    var s=R[k],h='<div><h4>'+title+'</h4><table class="mini"><thead><tr><th scope="col"><span class="sr">Step</span></th><th scope="col">Amount</th><th scope="col">Tax</th></tr></thead><tbody>';
+    if(s.coveredByStd>.5) h+='<tr><td>Covered by the standard deduction</td><td>'+money(s.coveredByStd)+'</td><td class="zero">$0</td></tr>';
+    var v=R.v[k];
+    v.lines.forEach(function(l){h+='<tr><td>'+lineLabel(l)+'</td><td>'+money(l.amt)+'</td><td>'+money(l.tax)+'</td></tr>'});
+    if(!v.lines.length&&s.coveredByStd<=.5) h+='<tr><td>No tax in this illustration</td><td>'+money(s.counted)+'</td><td class="zero">$0</td></tr>';
+    return h+'<tr class="sum"><td>Total tax</td><td></td><td>'+money(v.total)+'</td></tr></tbody></table></div>';
+  }
+  $('#lines').innerHTML=block('def','Tax-deferred (401(k) or IRA)')+block('tax',TERM==='short'?'Taxable, held a year or less':'Taxable, held more than a year');
+}
+function fillRef(){
+  var st=taxFacts(STATUS),rows='',lo=0;
+  st.brk.forEach(function(b){rows+='<tr><td>'+Math.round(b[1]*100)+'%</td><td>'+money(lo)+'</td><td>'+(b[0]===Infinity?'No limit':money(b[0]))+'</td></tr>';lo=b[0]});
+  $('#refOrd').innerHTML=rows;
+  $('#refGain').innerHTML='<tr><td>0%</td><td>$0</td><td>'+money(st.ltcg[0])+'</td></tr><tr><td>15%</td><td>'+money(st.ltcg[0])+'</td><td>'+money(st.ltcg[1])+'</td></tr><tr><td>20%</td><td>'+money(st.ltcg[1])+'</td><td>No limit</td></tr>';
+  $('#refStatus').textContent=st.label.toLowerCase();
+  var f={std:money(st.std),z:money(st.ltcg[0]),f:money(st.ltcg[1]),n:money(st.niit)};
+  $$('[data-f]').forEach(function(el){el.textContent=f[el.getAttribute('data-f')]});
+}
+function fillRmd(){
+  var r=rmdAmount(S.rmdAge,S.rmdBal),lead=$('#rmdLead'),box=$('#rmdStats');
+  if(!r.due){
+    lead.innerHTML='At age <b>'+S.rmdAge+'</b>, the IRS pages say required withdrawals have not started yet: they begin at age 73. Move the age slider to see what one could look like.';
+    box.innerHTML='';box.hidden=true;
+  }else{
+    var p=withAmount(params(),r.amount);p.early=false;
+    var x=taxView(taxPicture(p,true).def);
+    lead.innerHTML='At age <b>'+r.age+'</b>, with <b>'+money(S.rmdBal)+'</b> in tax-deferred accounts at the end of last year, the required withdrawal could be about <b>'+money(r.amount)+'</b> ('+money(S.rmdBal)+' divided by '+r.divisor.toFixed(1)+'). It is taxed as ordinary income on top of your other income, which in this illustration could cost about <b>'+money(x.total)+'</b>.';
+    box.hidden=false;
+    box.innerHTML='<div class="stat"><span>Required withdrawal</span><b>'+money(r.amount)+'</b><small>balance ÷ '+r.divisor.toFixed(1)+'</small></div>'
+      +'<div class="stat"><span>Tax on it, about</span><b>'+money(x.total)+'</b><small>'+pct(x.eff)+' of it</small></div>'
+      +'<div class="stat"><span>You could keep</span><b>'+money(x.keep)+'</b><small>after that tax</small></div>'
+      +'<div class="stat"><span>If it were missed</span><b>'+money(r.amount*RMD_MISS_RATE)+'</b><small>25% of what was not taken out; 10% if fixed within two years</small></div>';
+  }
+  $('#rmdNote').textContent="RMDs apply to 401(k)s and traditional IRAs, not to Roth IRAs or Roth accounts in a 401(k) while the owner is alive. The IRS pages say they begin at age 73, and the age may be later for people born in 1960 or later, so ask a tax professional about your birth year. The first one can wait until April 1 of the next year; later ones are due by December 31. A 401(k) owner who is still working for that employer can often wait until retirement, unless they own 5% or more of the company. The number uses the IRS Uniform Lifetime Table, which fits most owners; a spouse more than 10 years younger who is the sole beneficiary uses a different table.";
+}
+function render(){
+  var p=params();
+  LAST=taxPicture(p);
+  LAST.v={def:taxView(LAST.def),tax:taxView(LAST.tax),ex:taxView(LAST.ex)};
+  var vd=verdictFor(LAST);
+  $('#verdict').innerHTML=vd.h;$('#verdictSub').textContent=vd.s;
+  fillPicks();fillTable();fillLines();fillRef();fillRmd();
+  if(!$('#tool').hidden) drawChart();
+  clearTimeout(render.t);
+  render.t=setTimeout(function(){
+    var R=LAST;
+    $('#srSum').textContent='Taking out '+money(R.def.amount)+': tax-deferred '+money(R.def.total)+' of tax, taxable '+money(R.tax.total)+', Roth $0.';
+  },500);
+}
+
+/* ================= chart: tax added, against the amount taken out (hand-drawn SVG) ================= */
+function niceTicks(max,cnt){
+  var raw=max/cnt,mag=Math.pow(10,Math.floor(Math.log10(raw))),nm=raw/mag;
+  var st=(nm<=1?1:nm<=2?2:nm<=2.5?2.5:nm<=5?5:10)*mag;
+  var top=Math.ceil(max/st-1e-9)*st,ticks=[];
+  for(var v=0;v<=top+st/2;v+=st) ticks.push(+v.toFixed(6));
+  return {ticks:ticks,top:top};
+}
+var COL={def:'var(--a-def)',tax:'var(--a-tax)',ex:'var(--a-ex)'};
+function drawChart(extraR){
+  if(!LAST) return;
+  var wrap=$('#chartWrap'),W=Math.floor(wrap.clientWidth);
+  if(W<120) return;
+  var narrow=W<520,H=Math.round(Math.min(380,Math.max(260,W*0.56)));
+  var m={l:W<460?52:60,r:(narrow?84:116)+(extraR||0),t:26,b:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  var p=params(),xt=niceTicks(Math.max(250000,S.amount*1.25),5),xMax=xt.top,N=60,pts=[],i;
+  for(i=0;i<=N;i++){var a=xMax*i/N,r=taxPicture(withAmount(p,a),true);pts.push({a:a,def:r.def.total,tax:r.tax.total,ex:0})}
+  var ymax=1000;pts.forEach(function(q){ymax=Math.max(ymax,q.def,q.tax)});
+  var yt=niceTicks(ymax*1.06,4),yMax=yt.top;
+  var X=function(a){return m.l+(a/xMax)*iw},Y=function(v){return m.t+ih-(v/yMax)*ih};
+  var line=function(k){return pts.map(function(q){return X(q.a).toFixed(1)+','+Y(q[k]).toFixed(1)}).join(' ')};
+  var E=pts[N],label={def:narrow?'Deferred':'Tax-deferred',tax:'Taxable',ex:'Tax-exempt'};
+  var s='<svg class="chart" id="svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Three lines showing the tax added as the amount taken out rises from $0 to '+money(xMax)+'. At '+money(xMax)+': tax-deferred '+money(E.def)+', taxable '+money(E.tax)+', tax-exempt $0. A table of the figures at your amount is above the chart.">';
+  yt.ticks.forEach(function(v){
+    var y=Y(v);
+    s+='<line class="'+(v===0?'base':'gl')+'" x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'"/><text class="ax" x="'+(m.l-8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end">'+compact(v)+'</text>';
+  });
+  var step=1;
+  [1,2,4,5].some(function(k){step=k;return iw/((xt.ticks.length-1)/k+1)>=58});
+  xt.ticks.forEach(function(v,idx){
+    if(idx%step===0) s+='<text class="ax" x="'+X(v).toFixed(1)+'" y="'+(m.t+ih+20)+'" text-anchor="middle">'+compact(v)+'</text>';
+  });
+  s+='<text class="ax" x="'+(W-m.r)+'" y="'+(H-3)+'" text-anchor="end">Amount taken out</text>';
+  s+='<polyline points="'+line('tax')+'" fill="none" style="stroke:var(--a-tax)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  s+='<polyline points="'+line('ex')+'" fill="none" style="stroke:var(--a-ex)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  s+='<polyline points="'+line('def')+'" fill="none" style="stroke:var(--a-def)" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 5"/>';
+  /* your amount: a dashed vertical line and a dot on each line */
+  var ux=X(S.amount);
+  s+='<line x1="'+ux.toFixed(1)+'" x2="'+ux.toFixed(1)+'" y1="'+m.t+'" y2="'+(m.t+ih)+'" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 4"/>';
+  s+='<text class="ax" x="'+ux.toFixed(1)+'" y="'+(m.t-8)+'" text-anchor="'+(ux>W-m.r-60?'end':'middle')+'">Your amount '+compact(S.amount)+'</text>';
+  ACCTS.forEach(function(k){s+='<circle cx="'+ux.toFixed(1)+'" cy="'+Y(LAST[k].total).toFixed(1)+'" r="4.5" style="fill:'+COL[k]+';stroke:var(--bg)" stroke-width="2"/>'});
+  /* direct labels at the right end, pushed apart so they never overlap */
+  var rank={def:0,tax:1,ex:2},labs=ACCTS.map(function(k){var py=Y(E[k]);return {a:k,py:py,y:py+4}});
+  labs.sort(function(p1,q1){return (p1.y-q1.y)||(rank[p1.a]-rank[q1.a])});
+  var gap=15,lo=m.t+6,hi=m.t+ih+4;
+  labs.forEach(function(l,j){if(l.y<lo) l.y=lo;if(j>0&&l.y<labs[j-1].y+gap) l.y=labs[j-1].y+gap});
+  if(labs[2].y>hi){labs[2].y=hi;for(var j=1;j>=0;j--) if(labs[j].y>labs[j+1].y-gap) labs[j].y=labs[j+1].y-gap}
+  labs.forEach(function(l){
+    var x0=X(xMax);
+    s+='<circle cx="'+x0.toFixed(1)+'" cy="'+l.py.toFixed(1)+'" r="4" style="fill:'+COL[l.a]+';stroke:var(--bg)" stroke-width="2"/>';
+    if(Math.abs(l.y-4-l.py)>3) s+='<path d="M'+(x0+6).toFixed(1)+','+l.py.toFixed(1)+' L'+(x0+12).toFixed(1)+','+(l.y-4).toFixed(1)+'" fill="none" style="stroke:'+COL[l.a]+'" stroke-width="1" opacity=".7"/>';
+    s+='<text class="lab" x="'+(x0+15).toFixed(1)+'" y="'+l.y.toFixed(1)+'"><tspan style="fill:'+COL[l.a]+'">'+label[l.a]+'</tspan><tspan dx="6">'+compact(E[l.a])+'</tspan></text>';
+  });
+  s+='<g id="hv" style="display:none"><line id="hvl" y1="'+m.t+'" y2="'+(m.t+ih)+'" stroke="var(--ink-3)" stroke-width="1"/></g></svg>';
+  var tip=$('#tip');
+  wrap.innerHTML=s;wrap.appendChild(tip);tip.hidden=true;
+  /* the end labels are measured as drawn (fonts differ): if one runs past the edge, draw again with a wider right margin */
+  var over=0;$$('svg.chart text.lab').forEach(function(t){var b=t.getBBox();over=Math.max(over,b.x+b.width+2-W)});
+  if(over>0&&!extraR&&iw-over>=130) return drawChart(Math.ceil(over));
+  var svg=$('#svg');
+  function show(ev){
+    var r=svg.getBoundingClientRect(),scale=r.width/W;
+    var amt=Math.round(Math.max(0,Math.min(xMax,((ev.clientX-r.left)/scale-m.l)/iw*xMax))/1000)*1000,x=X(amt);
+    var q=taxPicture(withAmount(p,amt),true);
+    $('#hv').style.display='';$('#hvl').setAttribute('x1',x);$('#hvl').setAttribute('x2',x);
+    tip.innerHTML='<b>Taking out '+money(amt)+'</b>'+ACCTS.map(function(k){return '<div><span><i style="background:'+COL[k]+'"></i>'+label[k]+'</span>'+money(q[k].total)+'</div>'}).join('');
+    tip.hidden=false;
+    var tw=tip.offsetWidth,left=x*scale-tw/2;
+    tip.style.left=Math.max(4,Math.min(wrap.clientWidth-tw-4,left))+'px';
+  }
+  function hide(){$('#hv').style.display='none';tip.hidden=true}
+  svg.addEventListener('pointermove',show);svg.addEventListener('pointerdown',show);svg.addEventListener('pointerleave',hide);
+  var same=pts.every(function(q){return Math.abs(q.def-q.tax)<=.5}),tn=$('#tieNote');
+  tn.hidden=!same;
+  if(same) tn.textContent='The tax-deferred and taxable lines overlap in this view, so the dashed gold line sits on top of the grey one. Profit held a year or less is taxed like pay.';
+}
+if(window.ResizeObserver) new ResizeObserver(function(){drawChart()}).observe($('#chartWrap'));
+
+/* ================= choice toggles: buttons with aria-pressed and a sliding pill ================= */
+var placers=[];
+function placeSegs(){placers.forEach(function(p){p()})}
+function wireSeg(root,cb){
+  var btns=$$('button',root),th=$('.thumb',root);
+  function place(){
+    var sel=btns.filter(function(b){return b.getAttribute('aria-pressed')==='true'})[0];
+    if(!sel||!th||!sel.offsetWidth) return;
+    th.style.setProperty('--tx',sel.offsetLeft+'px');th.style.setProperty('--tw',sel.offsetWidth+'px');
+  }
+  function choose(v,quiet){
+    btns.forEach(function(x){x.setAttribute('aria-pressed',String(x.getAttribute('data-v')===v))});
+    place();if(!quiet) cb(v);
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){choose(b.getAttribute('data-v'))})});
+  if(window.ResizeObserver) new ResizeObserver(place).observe(root);
+  placers.push(place);place();
+  return choose;
+}
+var chooseStatus,chooseTerm,chooseAge;
+function wireToggles(){
+  chooseStatus=wireSeg($('#stSeg'),function(v){STATUS=v;render()});
+  chooseTerm=wireSeg($('#tmSeg'),function(v){TERM=v;render()});
+  chooseAge=wireSeg($('#agSeg'),function(v){AGEBAND=v;render()});
+}
+/* A link from the calculator (or anyone) can arrive with numbers in it: ?amount=40000&status=mfj&other=0&age=75&bal=500000. Nothing is sent anywhere; the page only starts from them. */
+function applyQuery(){
+  var q;try{q=new URLSearchParams(location.search)}catch(e){return false}
+  var used=false,map={amount:'amount',other:'other',profit:'profit',state:'state',age:'rmdAge',bal:'rmdBal'};
+  Object.keys(map).forEach(function(qk){
+    var raw=q.get(qk);if(raw===null) return;
+    var v=parseNum(raw);if(v===null) return;
+    S[map[qk]]=clampF(FM[map[qk]],v);used=true;
+  });
+  var st=q.get('status');if(st&&TAX_FACTS[st]){STATUS=st;used=true}
+  var tm=q.get('term');if(tm==='long'||tm==='short'){TERM=tm;used=true}
+  if(q.get('early')==='1'){AGEBAND='early';used=true}
+  return used;
+}
+/* ================= sheets (Learn More, Opt out) ================= */
+var TOPICS=[
+  {id:"plan",label:"My overall plan"},
+  {id:"debt",label:"Paying off debt"},
+  {id:"protect",label:"Protecting my income"},
+  {id:"budget",label:"Create a budget"},
+  {id:"tax",label:"Taxes"},
+  {id:"invest",label:"Investment strategy"}
+];
+var lastFocus=null,openId=null;
+function focusables(root){return $$('a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select,textarea,[tabindex]:not([tabindex="-1"])',root).filter(function(el){return !el.closest('[hidden]')&&el.offsetParent!==null})}
+function openSheet(id,topic){
+  lastFocus=document.activeElement;openId=id;
+  var el=$('#'+id);el.hidden=false;document.body.style.overflow='hidden';
+  if(id==='lm'){
+    $('#lmForm').hidden=false;$('#lmDone').hidden=true;$('#lm-err').textContent='';
+    $('#lm-topic').value=topic||'tax';   /* this tool is about taxes, so that is the topic that starts selected */
+  }
+  if(id==='oo'){$('#ooAsk').hidden=false;$('#ooDone').hidden=true;$('#ooErr').textContent='';$('#ooEmail').textContent=ACCESS?ACCESS.email:''}
+  var f=focusables(el);(f[1]||f[0]).focus();
+}
+function closeSheet(id){
+  $('#'+id).hidden=true;document.body.style.overflow='';openId=null;
+  if(lastFocus&&lastFocus.focus) lastFocus.focus();
+}
+document.addEventListener('keydown',function(e){
+  if(!openId) return;
+  if(e.key==='Escape'){closeSheet(openId);return}
+  if(e.key==='Tab'){
+    var f=focusables($('#'+openId));if(!f.length) return;
+    var first=f[0],lastEl=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();lastEl.focus()}
+    else if(!e.shiftKey&&document.activeElement===lastEl){e.preventDefault();first.focus()}
+  }
+});
+document.addEventListener('click',function(e){
+  var o=e.target.closest('[data-open]');
+  if(o){openSheet(o.getAttribute('data-open'),o.getAttribute('data-topic'));return}
+  var c=e.target.closest('[data-close]');
+  if(c){closeSheet(c.getAttribute('data-close'));return}
+  if(e.target.classList&&e.target.classList.contains('overlay')) closeSheet(e.target.id);
+});
+/* ================= access: gate, session, opt-out ================= */
+var ACCESS=null;
+/* The same address rule as the script's (a stricter rule on one side showed every refused address as a "connection" problem). */
+var EMAIL_OK=/^[a-z0-9._%+\-]+@[a-z0-9\-]+(\.[a-z0-9\-]+)*\.[a-z]{2,}$/;
+/* What went wrong, in words: no answer at all is a connection problem; an answer with a reason is not. */
+function gateProblem(r){
+  var c=r&&r.error;
+  if(c==='terms') return "This page is out of date. Reload it, then tick both boxes and try again.";
+  if(c==='invalid') return "That name or email didn't look right. Check them and try again.";
+  if(c==='server') return "We're busy for a moment. Please try again in a minute.";
+  return "We couldn't reach the server"+(r&&r.net?" ("+r.net+")":"")+". Check your connection and try again.";
+}
+function requestProblem(r){
+  var c=r&&r.error;
+  if(c==='nosignup') return "We couldn't find your sign-up. Reload the page and sign in again.";
+  if(c==='invalid') return "Something about that request didn't look right. Check it and try again.";
+  if(c==='server') return "We're busy for a moment. Please try again in a minute.";
+  return "We couldn't send that just now"+(r&&r.net?" ("+r.net+")":"")+". Check your connection and try again.";
+}
+function consentText(){return $('#consentLabel').textContent.replace(/\s+/g,' ').trim()}
+function termsText(){return $('#termsLabel').textContent.replace(/\s+/g,' ').trim()}
+function setErr(id,msg){$('#'+id).textContent=msg||'';return !!msg}
+function enterTool(a){
+  a.terms=CONFIG.termsVersion;   /* only reached after the terms were agreed to (a saved session older than these terms goes back to the gate) */
+  ACCESS=a;
+  $('#gate').hidden=true;$('#tool').hidden=false;placeSegs();
+  $('#whoName').textContent=a.email;
+  $('#brandSub').textContent='Hello, '+a.name;
+  updateOpt();
+  render();
+  window.scrollTo(0,0);
+}
+function showGate(){
+  ACCESS=null;$('#tool').hidden=true;$('#gate').hidden=false;
+}
+function updateOpt(){
+  var line=$('#optLine');
+  if(ACCESS&&ACCESS.optedOut){line.textContent="You're opted out of emails."}
+  else{line.innerHTML='<button class="linkbtn" id="optOpen" type="button">Opt out of emails</button>';$('#optOpen').addEventListener('click',function(){openSheet('oo')})}
+}
+function wireGate(){
+  var who=CONFIG.senderName?CONFIG.senderName:'the person who shared this tool';
+  $('#consentLabel').textContent='I consent to receive emails from '+who+' about my results, including a copy of my report, financial education and next steps. I understand I can opt out at any time.';
+  $('#ribbon').hidden=!!CONFIG.leadEndpoint;
+  $('#gateForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=$('#g-name').value.trim().replace(/\s+/g,' '),email=$('#g-email').value.trim().toLowerCase();
+    var ok=$('#g-consent').checked,tk=$('#g-terms').checked,hp=$('#g-hp').value;
+    setErr('e-form','');
+    var b1=setErr('e-name',name?'':'Enter your first name.');
+    var b2=setErr('e-email',EMAIL_OK.test(email)?'':'Enter a valid email address, like name@example.com.');
+    var b3=setErr('e-consent',ok?'':'Tick the box to continue. We need your OK before we email you.');
+    var b4=setErr('e-terms',tk?'':'Tick the box to continue. You need to agree to the Terms and Privacy Policy to use this.');
+    if(b1){$('#g-name').focus();return}
+    if(b2){$('#g-email').focus();return}
+    if(b3){$('#g-consent').focus();return}
+    if(b4){$('#g-terms').focus();return}
+    var btn=$('#gateBtn');btn.disabled=true;btn.textContent='Saving…';
+    function done(){
+      var a={name:name,email:email,optedOut:false,terms:CONFIG.termsVersion};
+      store.set(KEY,JSON.stringify(a));
+      btn.disabled=false;btn.textContent='Open the tool →';
+      enterTool(a);
+    }
+    if(hp){done();return}   /* a bot filled the hidden field: let it in, send nothing */
+    sendLead({type:'signup',name:name,email:email,consent:true,consentText:consentText(),consentVersion:CONFIG.consentVersion,terms:true,termsText:termsText(),termsVersion:CONFIG.termsVersion,source:getSource(),at:new Date().toISOString()})
+      .then(function(r){
+        if(!r.ok){btn.disabled=false;btn.textContent='Open the tool →';setErr('e-form',gateProblem(r));return}
+        done();
+      });
+  });
+  $('#notYou').addEventListener('click',function(){
+    store.del(KEY);$('#g-name').value='';$('#g-email').value='';$('#g-consent').checked=false;$('#g-terms').checked=false;showGate();
+  });
+  $('#ooYes').addEventListener('click',function(){
+    var b=$('#ooYes');b.disabled=true;$('#ooErr').textContent='';
+    sendLead({type:'opt_out',name:ACCESS.name,email:ACCESS.email,consentVersion:CONFIG.consentVersion,source:getSource(),at:new Date().toISOString()})
+      .then(function(r){
+        b.disabled=false;
+        if(!r.ok){$('#ooErr').textContent="We couldn't process that just now. Please try again.";return}
+        ACCESS.optedOut=true;store.set(KEY,JSON.stringify(ACCESS));updateOpt();
+        $('#ooDoneMsg').textContent=r.preview?"Preview mode: nothing was sent. In the live version this stops emails to "+ACCESS.email+".":"You won't get more emails. The calculator is still yours to use.";
+        $('#ooAsk').hidden=true;$('#ooDone').hidden=false;
+        var f=focusables($('#oo'));(f[1]||f[0]).focus();
+      });
+  });
+}
+
+/* ================= Learn More form ================= */
+function copyText(text,btn){
+  var old=btn.textContent;
+  var ok=function(){btn.textContent='Copied';setTimeout(function(){btn.textContent=old},1600)};
+  try{navigator.clipboard.writeText(text).then(ok,function(){})}catch(e){}
+}
+function renderContact(){
+  var box=$('#lmContact');box.textContent='';
+  var c=CONFIG.contact,items=[];
+  if(c.phone) items.push(['Call or text',c.phone]);
+  if(c.email) items.push(['Email',c.email]);
+  items.forEach(function(it){
+    var d=document.createElement('div'),sp=document.createElement('span'),bt=document.createElement('button');
+    sp.textContent=it[1];bt.type='button';bt.className='btn btn-ghost btn-sm';bt.textContent='Copy';
+    bt.addEventListener('click',function(){copyText(it[1],bt)});
+    d.appendChild(sp);d.appendChild(bt);box.appendChild(d);
+  });
+  if(c.bookingUrl){
+    var a=document.createElement('a');a.href=c.bookingUrl;a.target='_blank';a.rel='noopener noreferrer';a.className='btn btn-gold';a.textContent='Pick a time →';
+    box.appendChild(a);
+  }
+  box.hidden=!box.childNodes.length;
+}
+/* who to reach, in the page footer (the same line as the calculator's) */
+function renderFootContact(){
+  var p=$('#footContact'),c=CONFIG.contact;if(!p) return;
+  p.textContent='';
+  var bits=[];
+  if(c.phone) bits.push({t:c.phone,h:'tel:'+c.phone.replace(/[^\d+]/g,'')});
+  if(c.email) bits.push({t:c.email,h:'mailto:'+c.email});
+  if(!bits.length){p.hidden=true;return}
+  p.appendChild(document.createTextNode('Questions? Reach '+(c.name||'us')+' at '));
+  bits.forEach(function(b,i){
+    if(i) p.appendChild(document.createTextNode(' or '));
+    var a=document.createElement('a');a.href=b.h;a.textContent=b.t;p.appendChild(a);
+  });
+  p.appendChild(document.createTextNode(". Don't want calls? Email your number and we'll add it to our do-not-call list."));
+  p.hidden=false;
+}
+/* what the page sends for this tool: whole numbers and short words only (status single|mfj|hoh, term long|short, early 1 = under 59 1/2) */
+function taxInputs(){
+  return {status:STATUS,amount:Math.round(S.amount),other:Math.round(S.other),profit:Math.round(S.profit),state:Math.round(S.state),
+    term:TERM,early:AGEBAND==='early'?1:0,rmdAge:Math.round(S.rmdAge),rmdBal:Math.round(S.rmdBal)};
+}
+function wireLearnMore(){
+  $('#lm-topic').innerHTML=TOPICS.map(function(t){return '<option value="'+t.id+'">'+t.label+'</option>'}).join('');
+  $$('input[name=pref]').forEach(function(r){r.addEventListener('change',function(){
+    var call=$('input[name=pref]:checked').value==='call';$('#lm-phone-wrap').hidden=!call;
+    if(call) $('#lm-phone').focus();
+  })});
+  $('#lmForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var pref=$('input[name=pref]:checked').value,phone=$('#lm-phone').value.trim();
+    $('#lm-phone-e').textContent='';$('#lm-err').textContent='';
+    if(pref==='call'&&phone.replace(/\D/g,'').length<7){$('#lm-phone-e').textContent='Add a phone number, or choose Email me.';$('#lm-phone').focus();return}
+    var topic=$('#lm-topic').value;
+    var topicLabel=(TOPICS.filter(function(t){return t.id===topic})[0]||{}).label||topic;
+    var btn=$('#lmBtn');btn.disabled=true;btn.textContent='Sending…';
+    sendLead({type:'learn_more',name:ACCESS.name,email:ACCESS.email,topic:topic,topicLabel:topicLabel,contactPref:pref,phone:pref==='call'?phone:'',
+      message:$('#lm-msg').value.trim().slice(0,600),
+      callConsent:pref==='call'?$('#lm-phone-wrap .fine').textContent.trim():'',   /* the exact words shown next to the phone box, kept with the number */
+      tool:'taxes',tax:taxInputs(),sendReport:false,
+      consentVersion:CONFIG.consentVersion,source:getSource(),at:new Date().toISOString()})
+      .then(function(r){
+        btn.disabled=false;btn.textContent='Send my request';
+        if(!r.ok){$('#lm-err').textContent=requestProblem(r);return}
+        $('#lmName').textContent=ACCESS.name;
+        $('#lmDoneMsg').textContent=r.preview
+          ?'Preview mode: nothing was sent. In the live version your request and your assumptions go straight to the person who shared this tool.'
+          :'Your request is in, along with the assumptions on your screen. Watch your email for the next step.';
+        renderContact();
+        $('#lmForm').hidden=true;$('#lmDone').hidden=false;
+        var f=focusables($('#lm'));(f[1]||f[0]).focus();
+      });
+  });
+}
+/* ================= motion: icons answer taps, swipes and hovers ================= */
+var FX_TARGETS='.btn,.seg button,.fab,.brand,.x';
+function wrapArrows(){
+  $$('.btn').forEach(function(el){
+    var n=el.lastChild;
+    if(n&&n.nodeType===3&&/\s*→\s*$/.test(n.nodeValue)){
+      n.nodeValue=n.nodeValue.replace(/\s*→\s*$/,' ');
+      var s=document.createElement('span');s.className='arr';s.setAttribute('aria-hidden','true');s.textContent='→';el.appendChild(s);
+    }
+  });
+}
+function wireFx(){
+  if(REDUCED) return;
+  wrapArrows();
+  var cur=null,sx=0,sy=0,moved=false;
+  function ripple(el,e){
+    if(el.classList.contains('brand')) return;
+    var r=el.getBoundingClientRect(),d=document.createElement('span');
+    d.className='rip';
+    d.style.left=(e.clientX-r.left)+'px';d.style.top=(e.clientY-r.top)+'px';
+    d.style.setProperty('--s',(Math.max(r.width,r.height)*2.4/12).toFixed(1));
+    el.appendChild(d);
+    d.addEventListener('animationend',function(){d.remove()});
+    setTimeout(function(){if(d.parentNode) d.remove()},900);   /* backup: a ripple can never be left behind */
+  }
+  function swish(el){
+    el.classList.remove('swish');void el.offsetWidth;el.classList.add('swish');
+    setTimeout(function(){el.classList.remove('swish')},900);
+  }
+  document.addEventListener('pointerdown',function(e){
+    var el=e.target.closest&&e.target.closest(FX_TARGETS);
+    if(!el||(e.button&&e.button!==0)) return;
+    cur=el;sx=e.clientX;sy=e.clientY;moved=false;
+    ripple(el,e);
+    try{if(navigator.vibrate) navigator.vibrate(8)}catch(x){}
+  },{passive:true});
+  document.addEventListener('pointermove',function(e){
+    if(!cur) return;
+    var dx=e.clientX-sx,dy=e.clientY-sy;
+    if(!moved&&Math.abs(dx)+Math.abs(dy)<6) return;
+    moved=true;cur.classList.add('dragging');
+    cur.style.setProperty('--dx',Math.max(-16,Math.min(16,dx*.35)).toFixed(1));
+    cur.style.setProperty('--dy',Math.max(-10,Math.min(10,dy*.25)).toFixed(1));
+  },{passive:true});
+  function end(){
+    if(!cur) return;
+    var el=cur;cur=null;
+    el.classList.remove('dragging');
+    el.style.removeProperty('--dx');el.style.removeProperty('--dy');
+    if(moved||!el.classList.contains('btn')) swish(el);
+  }
+  document.addEventListener('pointerup',end,{passive:true});
+  document.addEventListener('pointercancel',end,{passive:true});
+}
+/* ================= click to reveal the chart ================= */
+function wireReveal(){
+  var sec=$('#chartSec'),btn=$('#revealBtn'),body=$('#revealBody'),cta=$('#revealCta');
+  function finish(){
+    sec.classList.remove('locked','revealing');
+    body.removeAttribute('inert');body.removeAttribute('aria-hidden');
+    cta.hidden=true;
+  }
+  btn.addEventListener('click',function(){
+    if(!sec.classList.contains('locked')) return;
+    cta.classList.add('gone');
+    body.removeAttribute('inert');body.removeAttribute('aria-hidden');
+    if(REDUCED){finish();return}
+    sec.classList.remove('locked');sec.classList.add('revealing');   /* shimmer + unblur run from CSS */
+    var ended=false;function end(){if(ended) return;ended=true;finish()}
+    body.addEventListener('animationend',function f(e){if(e.target===body){body.removeEventListener('animationend',f);setTimeout(end,120)}});
+    setTimeout(end,2600);   /* backup: never left half-revealed */
+  });
+}
+/* ================= start ================= */
+var PREFILLED=applyQuery();
+buildFields();wireFields();wireToggles();wireReveal();wireGate();wireLearnMore();wireFx();renderFootContact();
+if(PREFILLED){
+  chooseStatus(STATUS,true);chooseTerm(TERM,true);chooseAge(AGEBAND,true);
+  var pn=$('#prefillNote');pn.textContent='Started from the numbers in the link you opened. Change anything you like.';pn.hidden=false;
+}
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){placeSegs();drawChart()});
+if(document.fonts&&document.fonts.addEventListener) document.fonts.addEventListener('loadingdone',function(){placeSegs();drawChart()});   /* labels are measured as drawn, so draw again once the web font is in */
+var sr=document.createElement('p');sr.id='srSum';sr.className='sr';sr.setAttribute('aria-live','polite');document.body.appendChild(sr);
+var saved=null;
+try{saved=JSON.parse(store.get(KEY))}catch(e){}
+if(saved&&typeof saved.name==='string'&&typeof saved.email==='string'&&saved.name&&saved.email&&saved.terms===CONFIG.termsVersion) enterTool({name:saved.name,email:saved.email,optedOut:!!saved.optedOut});
+else{showGate();if(saved&&typeof saved.name==='string'&&typeof saved.email==='string'){$('#g-name').value=saved.name;$('#g-email').value=saved.email}}   /* new or changed terms: back to the gate, name and email filled in, both boxes to tick again */
+})();
+</script>
+</body></html>
