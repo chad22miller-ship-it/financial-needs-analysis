@@ -926,7 +926,7 @@ var NEED_GROUPS=[
 var HOW_GROUPS=[
   {g:"What you could be doing now",items:[
     {k:"contribution",label:"Monthly savings now",min:0,max:3000,step:250,mark:250,def:0,pre:"$",suf:"/mo",fmt:function(v){return money(v)+"/mo"}},
-    {k:"rate",label:"Assumed interest rate",min:0,max:25,step:1,snap:1,def:6,suf:"% a year",fmt:function(v){return v+"% a year"}},
+    {k:"rate",label:"Assumed interest rate",min:0,max:25,step:1,snap:1,def:0,suf:"% a year",fmt:function(v){return v+"% a year"}},
     {k:"savings",label:"Invested so far",min:0,max:500000,step:1000,mark:1000,def:0,hard:5000000,pre:"$",fmt:money}   /* a big-number slider: it moves in $1,000s */
   ]},
   {g:"Other things that could change it",items:[
@@ -1021,6 +1021,8 @@ var CALC1_RATE=9;
 S.rate=CALC1_RATE;
 /* the full calculator starts filled in to match the first one (Chad 11-15: "prefilled ... that match with what was put in the top FI chart") */
 Object.keys(S).forEach(function(k){S2[k]=S[k]});
+/* Chad 11-15 night ("these numbers start factory at zero as well" / "Start at 0%"): the full calculator's interest rate starts at 0% like its dollar inputs; the FIRST calculator stays at 9% */
+S2.rate=0;
 var CTX1={S:S,p:'',go:function(){render()}};
 var CTX2={S:S2,p:'c2-',go:function(){render2()}};
 function syncField(k,skipNum,c){
