@@ -484,6 +484,84 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.28)}
 input[type=range]::-moz-range-thumb{transition:transform .25s var(--ease-spring)}
 input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* MOBILE-CSS:BEGIN */
+/* ===== phones ===== */
+.livebar{display:none}
+@media (max-width:700px){
+  /* sign-in: the form comes first, so the hero shrinks to a title (the bullets and the watermark wait for a wider screen) */
+  .gate{padding-block:10px 24px}
+  .gate-card{border-radius:22px}
+  .gate-side{padding:18px 20px 16px;gap:8px}
+  .gate-side .mark{width:34px;height:34px}
+  .gate-side h1{font-size:22px;line-height:1.2}
+  .gate-side .points,.gate-side .fine,.gate-side .wm{display:none}
+  .gate-form{padding:18px 20px 22px;gap:11px}
+  .gate-form h2{font-size:22px}
+  .gate-form .lead{display:none}
+  .consent{padding:11px 12px;gap:10px}
+  .consent label{font-size:13.5px;line-height:1.45}
+  .gate-form .fine{font-size:12px}
+
+  /* header: just the name (Learn More lives in the bar below) */
+  .top{padding:8px 0}
+  .top>.btn{display:none}
+  .brand b{font-size:17px;white-space:nowrap}
+
+  /* the live bar: what the tool says right now, pinned to the bottom of the screen while you move the sliders */
+  .livebar{display:flex;position:sticky;bottom:0;z-index:24;align-items:center;gap:10px;margin:0 -16px;
+    padding:9px 16px calc(9px + env(safe-area-inset-bottom,0px));background:rgba(17,17,18,.96);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line-2);box-shadow:0 -10px 30px -18px rgba(0,0,0,.9)}
+  .livebar{overflow:hidden}
+  .lb-main{flex:1;min-width:0;display:grid;gap:4px}
+  .lb-cap{display:block;font:600 11px/1.2 var(--sans);letter-spacing:.03em;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-items{display:flex;gap:11px;min-width:0}
+  .lb-i{display:flex;flex-direction:column;min-width:0;overflow:hidden;border-left:3px solid var(--k,var(--gold-bright));padding-left:7px}
+  .lb-i small{font:500 10.5px/1.25 var(--sans);color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-i b{font:700 15px/1.2 var(--sans);color:var(--white);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .livebar .btn{flex:none;padding:10px 15px;font-size:14px}
+
+  /* the two tax tools: the answer first, then the controls, then the detail (the result sentence moves above the sliders) */
+  .intro{padding:4px 0 16px}
+  .intro h1{font-size:30px}
+  .sec-head{padding:2px 0 14px}
+  .shell{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .shell>*,.shell>.out>*{min-width:0}
+  .shell>.out{display:contents}
+  .shell>.out>.verdict{order:1;padding:0 0 20px}
+  .shell>.scenario{order:2;margin:0 0 6px}
+  .shell>.out>:not(.verdict){order:3}
+  .v-line{font-size:21px;line-height:1.32;margin:8px 0}
+  /* their controls: the number box beside its slider, not under it */
+  .shell>.scenario{padding:18px 16px;gap:20px}
+  .shell>.scenario h2{font-size:22px}
+  .shell>.scenario .field{display:grid;grid-template-columns:minmax(0,1fr) 112px;grid-template-areas:"head head" "hint hint" "rng num";column-gap:12px;row-gap:4px;align-items:center}
+  .shell>.scenario .field-head{grid-area:head}
+  .shell>.scenario .field .hint{grid-area:hint;margin:0 0 2px}
+  .shell>.scenario .rng{grid-area:rng;margin:0}
+  .shell>.scenario .num{grid-area:num;margin:0;padding:0 10px;gap:4px;border-radius:12px}
+  .shell>.scenario .num input{padding:9px 0;font-size:15px;text-align:right}
+  .shell>.scenario input[type=range]{height:34px}
+  .shell>.scenario input[type=range]::-webkit-slider-thumb{width:22px;height:22px;margin-top:-11px}
+  .shell>.scenario input[type=range]::-moz-range-thumb{width:22px;height:22px}
+  /* the three kinds of account: a swipe row instead of a long column */
+  .kinds{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;border:0;margin:2px -16px 26px;padding:0 16px 6px;scroll-padding:0 16px;-webkit-overflow-scrolling:touch}
+  .kind,.kind:first-of-type,.kind:last-child{flex:0 0 80%;scroll-snap-align:start;padding:18px 18px 20px;background:var(--surface);border:1px solid var(--line);border-radius:20px}
+  .kind + .kind{border:1px solid var(--line)}
+  .kind .bar{margin-bottom:12px}
+  .cta{padding:20px 0 6px;margin-top:20px}
+}
+/* small phones (360px and under): the bar's numbers and button shrink a little so three figures and Learn More still fit on one row */
+@media (max-width:380px){
+  .gate-side{padding:14px 18px 12px}
+  .gate-side h1{font-size:20px}
+  .gate-form{padding:14px 18px 20px}
+  .lb-items{gap:8px}
+  .lb-i{padding-left:6px}
+  .lb-i b{font-size:14px}
+  .livebar{gap:8px}
+  .livebar .btn{padding:9px 12px;font-size:13px}
+}
+/* MOBILE-CSS:END */
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -665,7 +743,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
           <p class="step-k">The full calculator</p>
           <h3 class="step-h">Current illustration</h3>
           <p class="step-p">Where the numbers could land at your retirement age if you keep saving what you save now, and how the balance could build year by year.</p>
-          <p class="step-p">You can change the FI assumptions (age, retirement age and monthly spending) above the chart, and what you save, the interest rate and the other assumptions on the left. Everything starts filled in to match the FI number above, and the boxes and the chart update as you change it.</p>
+          <p class="step-p" data-phone>You can change the FI assumptions (age, retirement age and monthly spending) above the chart, and what you save, the interest rate and the other assumptions on the left. Everything starts filled in to match the FI number above, and the boxes and the chart update as you change it.</p>
         </div>
         <div class="tiles">
           <div class="tile"><div class="k">Time horizon</div><div class="v" id="c2-t1v"></div><div class="s" id="c2-t1s"></div></div>
@@ -816,6 +894,7 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.28)}
     </footer>
 
     <button class="btn btn-primary fab" type="button" data-open="lm">Learn More →</button>
+    <div class="livebar" id="liveBar"><div class="lb-main" id="lbMain"></div><button class="btn btn-gold btn-sm" type="button" data-open="lm">Learn More</button></div>
   </div>
 
   <!-- ===== LEARN MORE ===== -->
@@ -1269,6 +1348,37 @@ function taxView(s){
 }
 /* TAXMATH:END */
 
+/* MOBILE-JS:BEGIN */
+/* The phone's live bar: what the tool is saying right now, always on screen, so a slider far from the results still shows what it did. */
+function lbMoney(v){
+  v=Math.round(v);
+  if(v>=1e12) return '$'+(v/1e12).toFixed(v>=1e13?0:1)+'T';
+  if(v>=1e9) return '$'+(v/1e9).toFixed(v>=1e10?0:1)+'B';
+  if(v>=1e6) return '$'+(v/1e6).toFixed(v>=1e7?1:2)+'M';
+  if(v>=1e5) return '$'+Math.round(v/1e3)+'K';
+  return '$'+v.toLocaleString('en-US');
+}
+function liveBar(cap,items){
+  var main=document.getElementById('lbMain');if(!main) return;
+  main.innerHTML='<span class="lb-cap">'+cap+'</span><span class="lb-items" aria-hidden="true">'
+    +items.map(function(i){return '<span class="lb-i" style="--k:'+i.k+'"><small>'+i.l+'</small><b>'+i.v+'</b></span>'}).join('')+'</span>';
+}
+/* A few sentences point at "the right" or "the left", which is not true on a phone. Marked with data-phone, they are reworded BY SCRIPT and only at
+   phone width (640px and under); on a wide screen the original text node is never touched, so it renders exactly as it always did. */
+var PHONE_SWAPS=[[' on the right',''],['above the chart','below the chart'],['on the left','further down']];
+function phoneCopy(){
+  var phone=!!(window.matchMedia&&window.matchMedia('(max-width:640px)').matches);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-phone]'),function(el){
+    if(el.getAttribute('data-orig')===null){if(!phone) return;el.setAttribute('data-orig',el.textContent)}
+    var t=el.getAttribute('data-orig');
+    if(phone) PHONE_SWAPS.forEach(function(s){t=t.split(s[0]).join(s[1])});
+    if(el.textContent!==t) el.textContent=t;
+  });
+}
+phoneCopy();
+(function(){var mq=window.matchMedia&&window.matchMedia('(max-width:640px)');if(!mq) return;if(mq.addEventListener) mq.addEventListener('change',phoneCopy);else if(mq.addListener) mq.addListener(phoneCopy)})();
+/* MOBILE-JS:END */
+
 /* ================= render ================= */
 var LAST=null,LAST2=null,srTimer=0,first2=true,LASTTONE2='';
 function tween(el,to,instant){
@@ -1320,6 +1430,7 @@ function render(){   /* calculator 1: Step 1 gives the FI number, Step 2 the til
   srTimer=setTimeout(function(){
     $('#srSum').textContent='Hypothetical savings at age '+S.retire+': '+money(P.fv)+'. '+d.label+'.';
   },500);
+  updateBar();
 }
 function render2(){   /* calculator 2: the full, all-in-one calculator, with its own numbers */
   var S=S2,P=project(S2);LAST2=P;
@@ -1336,6 +1447,12 @@ function render2(){   /* calculator 2: the full, all-in-one calculator, with its
   if(!$('#tool').hidden) drawChartTo(CH2);
   first2=false;
   renderTax(P);
+  updateBar();
+}
+/* the phone's live bar (hidden on a wide screen): the FI number from the first calculator, savings and income from the full one */
+function updateBar(){
+  if(!LAST||!LAST2) return;
+  liveBar('Your illustration',[{l:'FI number',v:lbMoney(LAST.goal),k:'#F2C84B'},{l:'Savings at '+S2.retire,v:lbMoney(LAST2.fv),k:'#EDEBE6'},{l:'Income',v:lbMoney(LAST2.income)+'/mo',k:'#D8405C'}]);
 }
 /* taxes on the full calculator's income: its illustrated monthly income (today's dollars) x 12, taken out in one year with no other income,
    taxed three ways with the 2026 IRS figures (the same engine as the tax picture page). A simplified look, shown on this card only. */
